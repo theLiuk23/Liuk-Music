@@ -1,0 +1,2 @@
+11/07/2022 19:35:10 - Command raised an exception: TypeError: can only concatenate str (not "int") to str
+11/07/2022 19:36:14 - Command raised an exception: TypeError: can only concatenate str (not "int") to str

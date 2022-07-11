@@ -1,4 +1,5 @@
 import datetime
+from lib2to3.pytree import Base
 
 
 class OptionNotFound(BaseException):
@@ -12,6 +13,8 @@ class NotConnected(BaseException):
     def __init__(self, author):
         self.author = author
     def message(self):
+        if self.author == "Bot":
+            return f"The bot is not connected to a voice channel."
         return f"{self.author.name} is not connected to a voice channel."
 
 
@@ -28,3 +31,17 @@ class BotIsNotPlaying(BaseException):
         self.channel = channel
     def message(self):
         return f"The bot is connected to {self.channel.name} but is playing no music."
+
+
+class BotIsAlreadyPlaying(BaseException):
+    def __init__(self, channel):
+        self.channel = channel
+    def message(self):
+        return f"The bot is already playing some music in '{self.channel.name}' channel."
+
+
+class QueueIsEmpty(BaseException):
+    def __init__(self, queue):
+        self.queue = queue
+    def message(self):
+        return f"There are no songs in the music queue."
