@@ -236,6 +236,11 @@ class MusicCog(commands.Cog):
         self.queue.pop(index - 1)
 
 
+    @commands.command(name="commands")
+    async def commands(self, ctx):
+        await ctx.send("**Here's a list of the available commands:**\n - " + "\n - ".join([command.name for command in self.get_commands()]))
+
+
 
 
 

@@ -1,2 +1,5 @@
 11/07/2022 19:35:10 - Command raised an exception: TypeError: can only concatenate str (not "int") to str
 11/07/2022 19:36:14 - Command raised an exception: TypeError: can only concatenate str (not "int") to str
+13/07/2022 16:20:50 - Command raised an exception: AttributeError: 'Bot' object has no attribute 'get_commands'
+13/07/2022 16:22:38 - Command raised an exception: AttributeError: module 'discord.ext.commands' has no attribute 'name'
+13/07/2022 16:24:20 - Command raised an exception: TypeError: '<' not supported between instances of 'Command' and 'Command'
