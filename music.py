@@ -64,7 +64,6 @@ class MusicCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        # await self.load_playlists()
         if not self.check_music.is_running():
             self.check_music.start()
         if not self.check_members.is_running():
@@ -75,37 +74,12 @@ class MusicCog(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send(f'{ctx.message.content.split(" ")[0]} is not an available command. Type {self.prefix}help to get more information.')
-        elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'The command is on cooldown. Wait {error.retry_after:.2f} seconds.')
-        elif isinstance(error, youtube_dl.DownloadError):
-            await ctx.send(f'There is a unexpected error during the download of the song.')
-        elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f'A required argument is missing. ' + error.param.name)
-        elif isinstance(error, commands.ChannelNotFound):
-            await ctx.send(f"The {error.argument} is not connected to a voice channel.")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send(f'The provided arguments are not correct.')
-        elif isinstance(error, exceptions.TooLongVideo):
-            await ctx.send(f'{error.title} is more than an hour long. ' + error.duration)
-        elif isinstance(error, discord.errors.Forbidden):
-            await ctx.send("Error 403. The song could not be downloaded. Try again.")
-        elif isinstance(error, exceptions.BotIsAlreadyPlaying):
-            await ctx.send("Bot is already playing some music.")
-        elif isinstance(error, exceptions.BotIsNotPlaying):
-            await ctx.send("Bot is not playing some music at the moment.")
-        elif isinstance(error, exceptions.QueueIsEmpty):
-            await ctx.send(f'There are no songs in the music queue.')
-        # elif isinstance(error, exceptions.PlaylistNotFound):
-        #     await ctx.send(f'There is no playlist named: {error.pl_name}')
-        elif isinstance(error, TimeoutError):
-            await ctx.send("Expired [default = No]")
-        # elif isinstance(error, exceptions.FileAlreadyExists):
-        #     await ctx.send(f'A file named {error.file} already exists.')
-        else:
-            await self.append_error_log(error)
-            await ctx.send('Unexpected error.')
-            await self.reload_bot(ctx)
+            await ctx.send(error.args[0])
+
+
+    async def cog_command_error(self, ctx, error):
+        await self.append_error_log(error.message(), error.author)
+        await ctx.send(error.message())
 
 
 
@@ -115,52 +89,52 @@ class MusicCog(commands.Cog):
 
 
 
-
-    @commands.command(name="p")
-    async def p(self, ctx, *args):
-        if len(args) <= 0:
-            raise commands.MissingRequiredArgument("song name")
+    @commands.command(help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.",
+                    aliases=["play", "reproduce", "rec", "suona", "riproduci", "musica"])
+    async def p(self, ctx, *query):
+        if len(query) <= 0:
+            raise exceptions.MissingRequiredArgument("query", ctx.author)
         if ctx.author.voice is None:
             raise exceptions.NotConnected("Bot")
         if self.voice is None:
             await self.connect(ctx)
-        
-        query = " ".join(args)
+        query = " ".join(query)
         self.queue.append(query)
         await ctx.send("Song added to the queue!")
         if not self.voice.is_playing():
-            await self.play_music()
+            await self.play_music()    
 
 
-    @commands.command(name="stop")
+    @commands.command(help="It disconnects the bot from its voice channel.",
+                    aliases=[])
     async def stop(self, ctx):
         await self.disconnect()
 
 
-    @commands.command(name="skip")
+    @commands.command(help="It stops the current playing song to play the next song.")
     async def skip(self, ctx):
         if self.voice is None:
-            raise exceptions.NotConnected(ctx.author)
+            raise exceptions.NotConnected("Bot")
         self.voice.stop()
 
 
-    @commands.command(name="np")
+    @commands.command(name="np", help="It shows some information about the current playing song.")
     async def np(self, ctx):
         if self.voice is None:
-            raise exceptions.NotConnected(ctx.author)
+            raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            raise exceptions.BotIsNotPlaying(self.voice.channel)
+            raise exceptions.BotIsNotPlaying(self.voice.channel, ctx.author)
         await self.send_np_embed(ctx)
 
 
-    @commands.command(name="queue")
+    @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.")
     async def next(self, ctx):
         if len(self.queue) <= 0:
-            raise exceptions.QueueIsEmpty(self.queue)
+            raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
 
 
-    @commands.command(name="offline")
+    @commands.command(name="offline", help="It makes the bot go offline (You must be the owner).")
     @commands.is_owner()
     async def offline(self, ctx):
         await ctx.send("Going offline! See ya later.")
@@ -169,43 +143,36 @@ class MusicCog(commands.Cog):
         await self.bot.close()
 
 
-    @commands.command(name="pause")
+    @commands.command(name="pause", help="It pauses the music.")
     async def pause(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            raise exceptions.BotIsNotPlaying()
+            raise exceptions.BotIsNotPlaying(ctx.author)
         self.voice.pause()
         await ctx.send('Music paused.')
 
 
-    @commands.command(name="resume")
+    @commands.command(name="resume", help="It resumes the music.")
     async def resume(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if self.voice.is_playing():
-            raise exceptions.BotIsAlreadyPlaying()
+            raise exceptions.BotIsAlreadyPlaying(ctx.author)
         self.voice.resume()
         await ctx.send('Music resumed.')
 
 
-    @commands.command(name="help")
-    async def help(self, ctx, *args):
-        embed = discord.Embed(color= discord.Colour.dark_teal())
-        embed.add_field(name='Here\'s a github page containing all the "Music From YT!" bot info:', value='[Music From YT! - github.com](https://github.com/theLiuk23/Discord-bot-NEW)', inline=False)
-        await ctx.send(embed=embed)
-
-
-    @commands.command(name="vol")
-    async def vol(self, ctx, *args):
-        if len(args) == 0:
+    @commands.command(name="vol", help="It sets or gets the music volume.")
+    async def vol(self, ctx, volume):
+        if volume is None:
             await ctx.send(f"Volume is now set to {int(self.volume * 100)}")
         else:
-            if not str.isdigit(args[0]):
-                raise commands.BadArgument()
-            volume = int(args[0])
+            if not str.isdigit(volume):
+                raise exceptions.BadArgumentType(volume, type(volume), int, ctx.author)
+            volume = int(volume)
             if volume < 0 or volume > 200:
-                raise commands.BadArgument()
+                raise exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author)
             self.volume = float(volume / 100)
             await ctx.send(f"Volume is now set to {volume}%")
             if self.voice is not None:
@@ -218,27 +185,24 @@ class MusicCog(commands.Cog):
 
 
     @commands.is_owner()
-    @commands.command(name="reload")
+    @commands.command(name="reload", help="It makes the bot go offline and online again (You must be the owner).")
     async def reload(self, ctx):
         await self.reload_bot()
 
 
-    @commands.command(name="rm")
-    async def rm(self, ctx, *args):
-        if len(args) <= 0:
-            raise commands.MissingRequiredArgument("song index")
-        if not str.isdigit(args[0]):
-            raise commands.BadArgument("The argument must be an integer rappresenting the index of the song you want to remove.")
-        index = int(args[0]) - 1
+    @commands.command(name="rm", help="It removes a song from the queue.")
+    async def rm(self, ctx, index):
+        if index is None:
+            raise exceptions.MissingRequiredArgument("song index", ctx.author)
+        if not str.isdigit(index):
+            raise exceptions.BadArgumentType(index, type(index), int, ctx.author)
+        index = int(index) - 1
+        if len(self.queue) <= 0:
+            raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         if len(self.queue) < index or index <= 0:
-            raise commands.BadArgument(f"The queue does not contain a song at index {index}")
+            raise exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author)
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
-
-
-    @commands.command(name="commands")
-    async def commands(self, ctx):
-        await ctx.send("**Here's a list of the available commands:**\n - " + "\n - ".join([command.name for command in self.get_commands()]))
 
 
 
@@ -313,7 +277,38 @@ class MusicCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    async def append_error_log(self, error):
+    async def append_error_log(self, error, author):
         with open("error_log.txt", "a") as file:
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             file.write(f"{time} - {str(error)}\n")
+
+
+
+
+class CustomHelpCommand(commands.HelpCommand):
+    def __init__(self):
+        super().__init__()
+
+
+    async def send_bot_help(self, mapping):
+        embed = discord.Embed(title="Help command")
+        for cog, commands in mapping.items():
+            filtered = await self.filter_commands(commands, sort=True)
+            command_signatures = [self.get_command_signature(c) for c in filtered]
+            if command_signatures:
+                cog_name = getattr(cog, "qualified_name", "No Category")
+                embed.add_field(name=cog_name, value="\n".join(command_signatures), inline=False)
+
+        await self.get_destination().send(embed=embed)
+
+
+    
+    async def send_command_help(self, command):
+        embed = discord.Embed(title=f"Command: '**{self.get_command_signature(command)}**'")
+        embed.add_field(name="Function", value=command.help)
+        alias = command.aliases
+        if alias:
+            embed.add_field(name="Aliases", value=", ".join(alias), inline=False)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)

@@ -1,5 +1,12 @@
-11/07/2022 19:35:10 - Command raised an exception: TypeError: can only concatenate str (not "int") to str
-11/07/2022 19:36:14 - Command raised an exception: TypeError: can only concatenate str (not "int") to str
-13/07/2022 16:20:50 - Command raised an exception: AttributeError: 'Bot' object has no attribute 'get_commands'
-13/07/2022 16:22:38 - Command raised an exception: AttributeError: module 'discord.ext.commands' has no attribute 'name'
-13/07/2022 16:24:20 - Command raised an exception: TypeError: '<' not supported between instances of 'Command' and 'Command'
+13/07/2022 18:51:45 - The provided argument 'test' is type '<class 'str'>' but it need to be type '<class 'int'>'
+13/07/2022 18:52:54 - The provided argument 'test' is type 'str' but it need to be type 'int'
+13/07/2022 18:56:45 - The parameter 4 is a bad argument: Greater than 0 or lower than 1
+13/07/2022 18:58:07 - There are no songs in the music queue.
+13/07/2022 18:58:42 - There are no songs in the music queue.
+13/07/2022 18:58:51 - There are no songs in the music queue.
+13/07/2022 18:59:31 - The parameter 4 is a bad argument: Greater than 1 or lower than 1
+13/07/2022 19:10:59 - Liuk Del Valun, you are not connected to a voice channel.
+13/07/2022 19:12:24 - The bot is not connected to a voice channel.
+13/07/2022 19:33:42 - A required argument is missing: 'query'
+13/07/2022 20:05:39 - There are no songs in the music queue.
+13/07/2022 20:14:21 - The bot is not connected to a voice channel.

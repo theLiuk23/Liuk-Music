@@ -41,12 +41,15 @@ def install_ffmpeg():
 
 if __name__ == "__main__":
     install_ffmpeg()
-    token = read_setting("token")
-    prefix = read_setting("prefix")
-    volume = read_setting("volume")
+    try:
+        token = read_setting("token")
+        prefix = read_setting("prefix")
+        volume = read_setting("volume")
+    except exceptions.OptionNotFound as error:
+        print(error.message())
     if token is None or prefix is None or volume is None:
         raise exceptions.OptionNotFound(token, prefix, volume)
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
-    client = commands.Bot(command_prefix=prefix, intents=intents, activity=activity, help_command=None)
+    client = commands.Bot(command_prefix=prefix, intents=intents, activity=activity, help_command=music.CustomHelpCommand())
     client.add_cog(music.MusicCog(client, prefix, float(volume)))
     client.run(token, bot=True)
