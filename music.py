@@ -75,10 +75,15 @@ class MusicCog(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(error.args[0])
+        else:
+            await self.append_error_log(error, ctx.author, handled=False)
+            await ctx.send("An unexpected error occured. If it persists please contact the owner of the bot:\n" +
+                            "**Discord:** Liuk Del Valun #3966\n" + 
+                            "**Email:** ldvcoding@gmail.com")
 
 
     async def cog_command_error(self, ctx, error):
-        await self.append_error_log(error.message(), error.author)
+        await self.append_error_log(error.message(), error.author, handled=True)
         await ctx.send(error.message())
 
 
@@ -282,10 +287,10 @@ class MusicCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    async def append_error_log(self, error, author):
+    async def append_error_log(self, error, author, handled=False):
         with open("error_log.txt", "a") as file:
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            file.write(f"{time} - {str(error)}\n")
+            file.write(f"{author.name} - {time} | {str(error)}\n")
 
 
 
@@ -295,6 +300,7 @@ class CustomHelpCommand(commands.HelpCommand):
         super().__init__()
 
 
+    # help command
     async def send_bot_help(self, mapping):
         embed = discord.Embed(title="Help command")
         for cog, commands in mapping.items():
@@ -307,7 +313,7 @@ class CustomHelpCommand(commands.HelpCommand):
         await self.get_destination().send(embed=embed)
 
 
-    
+    # help <command> command
     async def send_command_help(self, command):
         embed = discord.Embed(title=f"Command: '**{self.get_command_signature(command)}**'")
         embed.add_field(name="Function", value=command.help)

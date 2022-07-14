@@ -1,12 +1,5 @@
-13/07/2022 18:51:45 - The provided argument 'test' is type '<class 'str'>' but it need to be type '<class 'int'>'
-13/07/2022 18:52:54 - The provided argument 'test' is type 'str' but it need to be type 'int'
-13/07/2022 18:56:45 - The parameter 4 is a bad argument: Greater than 0 or lower than 1
-13/07/2022 18:58:07 - There are no songs in the music queue.
-13/07/2022 18:58:42 - There are no songs in the music queue.
-13/07/2022 18:58:51 - There are no songs in the music queue.
-13/07/2022 18:59:31 - The parameter 4 is a bad argument: Greater than 1 or lower than 1
-13/07/2022 19:10:59 - Liuk Del Valun, you are not connected to a voice channel.
-13/07/2022 19:12:24 - The bot is not connected to a voice channel.
-13/07/2022 19:33:42 - A required argument is missing: 'query'
-13/07/2022 20:05:39 - There are no songs in the music queue.
-13/07/2022 20:14:21 - The bot is not connected to a voice channel.
+Liuk Del Valun - 14/07/2022 17:30:31 | Bot
+Liuk Del Valun - 14/07/2022 17:33:51 | Command "fhfh" is not found
+Liuk Del Valun - 14/07/2022 17:33:58 | Command "uejbd" is not found
+Liuk Del Valun - 14/07/2022 17:40:20 | Command "ooshs" is not found
+Liuk Del Valun - 14/07/2022 17:41:47 | Command "hgsv" is not found
