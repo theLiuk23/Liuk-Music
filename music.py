@@ -5,7 +5,13 @@ please either open the commands.txt file or visit my GitHub Repository at https:
 If you have any question, please write me at ldvcoding@gmail.com
 '''
 
-
+'''
+These are compulsory libraries that the bot needs in order to work.
+To install all the dependencies:
+    open a terminal window (Ctrl + alt + T)
+    change directory to the project folder (e.g.: $ cd Downloads/Discord-music-bot)
+    run the following command: $ pip install -r requirements.txt
+'''
 from discord.ext import commands
 from discord.ext import tasks
 import datetime, time
@@ -19,43 +25,57 @@ import os, sys
 
 class MusicCog(commands.Cog):
     def __init__(self, bot, prefix, volume):
-        self.bot = bot
-        self.prefix = prefix
-        self.volume = volume
-        self.check1, self.check2 = 0, 0
-        self.voice = None
-        self.song_info = None
-        self.played_songs = []
-        self.queue = []
-        self.YTDL_OPTIONS = {
+        self.bot = bot # instance of commands.Bot class
+        self.prefix = prefix # bot prefix [default=!]
+        self.volume = volume # music volume (between 0.0 and 2.0)
+        self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
+        self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
+        self.song_info = None # dictionary containing the info of the current playing song
+        self.played_songs = [] # list containing the titles of already played songs
+        self.queue = [] # list containing the titles of the songs which are going to be played
+        self.YTDL_OPTIONS = { # options for youtube_dl library
             'format': 'bestaudio',
             'ignoreerrors':'True',
             'noplaylist': 'True',
             'nowarnings': 'True',
             'quiet': 'True' }
-        self.FFMPEG_OPTIONS = {
+        self.FFMPEG_OPTIONS = { # options for FFMPEG library
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn -hide_banner -loglevel error' }
         
 
     @tasks.loop(seconds=5)
     async def check_members(self):
+        '''
+        Function called every 5 seconds that checks whether the bot is alone in the voice channel.\n
+        If the bot is alone in the voice channel, the variable self.check1 will increase by 1.
+        After 3 times in a row, the bot will disconnect from the voice channel.
+        '''
         if self.voice is not None:
             if self.check1 >= 3:
                 await self.disconnect()
                 return
             if len(self.voice.channel.members) <= 1:
                 self.check1 += 1
+            else:
+                self.check1 = 0
                  
         
     @tasks.loop(seconds=5)
     async def check_music(self):
+        '''
+        Function called every 5 seconds that checks whether the bot is still playing some music.\n
+        If the bot is not playing music anymore, the variable self.check2 will increase by 1.
+        After 3 times in a row, the bot will disconnect from the voice channel.
+        '''
         if self.voice is not None:
             if self.check2 >= 3:
                 await self.disconnect()
                 return
             if not self.voice.is_playing():
                 self.check2 += 1
+            else:
+                self.check2 = 0
 
 
 
@@ -64,6 +84,12 @@ class MusicCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        '''
+        Listener triggered when the bot goes online.\n
+        It prints in the console the current date and it starts the bot loops:
+            - self.check_music()
+            - self.check_members()
+        '''
         if not self.check_music.is_running():
             self.check_music.start()
         if not self.check_members.is_running():
@@ -73,8 +99,37 @@ class MusicCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandNotFound):
-            await ctx.send(error.args[0])
+        '''
+        Listener triggered when a discord exception has raised.
+        If there is a unhandled exception, it sends an "about me" message and saves the error in the "error_log.txt" file
+        Handled exceptions:
+            - Custom Exceptions (see exceptions.py file)
+            - CommandNotFound
+            - CheckFailure
+            - CheckAnyFailure
+            - CommandOnCooldown
+            - NotOwner
+            - ChannelNotFound
+            - MissingPermissions
+        '''
+        if hasattr(error, "message"): # check if error is a custom exception (see exceptions.py file)
+            await ctx.send(error.message)
+        elif isinstance(error, commands.CommandNotFound):
+            await ctx.send(f"This is not an available command.\nType {self.prefix}help to get a list of the available commands.")
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send("Check failure error.")
+        elif isinstance(error, commands.CheckAnyFailure):
+            await ctx.send("Check any failure error.")
+        elif isinstance(error, commands.DisabledCommand):
+            await ctx.send("The command is currently disabled.")
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f"The command is on cooldown. Wait {error.retry_after:0.2f} seconds.")
+        elif isinstance(error, commands.NotOwner):
+           await ctx.send("You must be the owner to run this command.")
+        elif isinstance(error, commands.ChannelNotFound):
+            await ctx.send(f"The channel '{error.argument}' was not found.")
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.send("You don't have the required permissions to run this command: \n{0}".format('\n'.join(error.missing_perms)))
         else:
             await self.append_error_log(error, ctx.author, handled=False)
             await ctx.send("An unexpected error occured. If it persists please contact the owner of the bot:\n" +
@@ -82,21 +137,18 @@ class MusicCog(commands.Cog):
                             "**Email:** ldvcoding@gmail.com")
 
 
-    async def cog_command_error(self, ctx, error):
-        await self.append_error_log(error.message(), error.author, handled=True)
-        await ctx.send(error.message())
 
 
 
 
-
-
-
-
-
+    @commands.cooldown(1, 3, commands.BucketType.user) # 0 == default = global 
     @commands.command(help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.",
                     aliases=["play", "reproduce", "rec", "suona", "riproduci", "musica"])
     async def p(self, ctx, *query):
+        '''
+        It appends the user query to the queue list\n
+        If the bot is not already playing in a voice channel, it runs the self.play_music() function.
+        '''
         if len(query) <= 0:
             raise exceptions.MissingRequiredArgument("query", ctx.author)
         if ctx.author.voice is None:
@@ -113,20 +165,31 @@ class MusicCog(commands.Cog):
     @commands.command(help="It disconnects the bot from its voice channel.",
                     aliases=["disconnect", "shut up", "basta", "zitto", "citu", "disconnetti", "disconnettiti"])
     async def stop(self, ctx):
+        '''
+        It disconnects the bot from the voice channel.\n
+        Aka it runs the self.disconnect() function.
+        '''
         await self.disconnect()
 
 
     @commands.command(help="It stops the current playing song to play the next song.",
                     aliases=["next", "pass", "prossima", "salta"])
     async def skip(self, ctx):
+        '''
+        It stops the current playing song (so the next one in the queue will start).
+        '''
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         self.voice.stop()
 
 
+    @commands.cooldown(1, 10, commands.BucketType.user)  # 0 == default = global
     @commands.command(name="np", help="It shows some information about the current playing song.",
                     aliases=["now playing", "info", "song info", "informazioni", "informazione"])
     async def np(self, ctx):
+        '''
+        It sends an embed containing all the info about the current playing song.
+        '''
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
@@ -137,6 +200,9 @@ class MusicCog(commands.Cog):
     @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.",
                     aliases=["next songs", "upcoming", "future", "coda", "scaletta"])
     async def next(self, ctx):
+        '''
+        It shows a list containing all the queries in the 'self.queue' list
+        '''
         if len(self.queue) <= 0:
             raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
@@ -146,6 +212,10 @@ class MusicCog(commands.Cog):
                     aliases=["shutdown", "away", "spegni"])
     @commands.is_owner()
     async def offline(self, ctx):
+        '''
+        It makes the bot disconnect from the voice channel and go offline.\n
+        You must be the owner.
+        '''
         await ctx.send("Going offline! See ya later.")
         if self.voice is not None:
             await self.disconnect()
@@ -154,6 +224,9 @@ class MusicCog(commands.Cog):
 
     @commands.command(name="pause", help="It pauses the music.", aliases=["pausa"])
     async def pause(self, ctx):
+        '''
+        It pauses the music in the voice channel.
+        '''
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
@@ -164,6 +237,9 @@ class MusicCog(commands.Cog):
 
     @commands.command(name="resume", help="It resumes the music.", aliases=["riprendi", "ricomincia"])
     async def resume(self, ctx):
+        '''
+        It resumes the music in the voice channel.
+        '''
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if self.voice.is_playing():
@@ -175,6 +251,9 @@ class MusicCog(commands.Cog):
     @commands.command(name="vol", help="It sets or gets the music volume.",
                     aliases=["v", "volume"])
     async def vol(self, ctx, volume):
+        '''
+        It sets or gets the music volume.
+        '''
         if volume is None:
             await ctx.send(f"Volume is now set to {int(self.volume * 100)}")
         else:
@@ -197,11 +276,18 @@ class MusicCog(commands.Cog):
     @commands.is_owner()
     @commands.command(name="reload", help="It makes the bot go offline and online again (You must be the owner).")
     async def reload(self, ctx):
+        '''
+        It makes the bot go offline and online again. (see self.reload_bot() function)
+        You must be the owner.
+        '''
         await self.reload_bot()
 
 
     @commands.command(name="rm", help="It removes a song from the queue.")
     async def rm(self, ctx, index):
+        '''
+        It removes a query from the self.queue list by index.
+        '''
         if index is None:
             raise exceptions.MissingRequiredArgument("song index", ctx.author)
         if not str.isdigit(index):
