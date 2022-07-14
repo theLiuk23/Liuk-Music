@@ -106,19 +106,21 @@ class MusicCog(commands.Cog):
 
 
     @commands.command(help="It disconnects the bot from its voice channel.",
-                    aliases=[])
+                    aliases=["disconnect", "shut up", "basta", "zitto", "citu", "disconnetti", "disconnettiti"])
     async def stop(self, ctx):
         await self.disconnect()
 
 
-    @commands.command(help="It stops the current playing song to play the next song.")
+    @commands.command(help="It stops the current playing song to play the next song.",
+                    aliases=["next", "pass", "prossima", "salta"])
     async def skip(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         self.voice.stop()
 
 
-    @commands.command(name="np", help="It shows some information about the current playing song.")
+    @commands.command(name="np", help="It shows some information about the current playing song.",
+                    aliases=["now playing", "info", "song info", "informazioni", "informazione"])
     async def np(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
@@ -127,14 +129,16 @@ class MusicCog(commands.Cog):
         await self.send_np_embed(ctx)
 
 
-    @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.")
+    @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.",
+                    aliases=["next songs", "upcoming", "future", "coda", "scaletta"])
     async def next(self, ctx):
         if len(self.queue) <= 0:
             raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
 
 
-    @commands.command(name="offline", help="It makes the bot go offline (You must be the owner).")
+    @commands.command(name="offline", help="It makes the bot go offline (You must be the owner).",
+                    aliases=["shutdown", "away", "spegni"])
     @commands.is_owner()
     async def offline(self, ctx):
         await ctx.send("Going offline! See ya later.")
@@ -143,7 +147,7 @@ class MusicCog(commands.Cog):
         await self.bot.close()
 
 
-    @commands.command(name="pause", help="It pauses the music.")
+    @commands.command(name="pause", help="It pauses the music.", aliases=["pausa"])
     async def pause(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
@@ -153,7 +157,7 @@ class MusicCog(commands.Cog):
         await ctx.send('Music paused.')
 
 
-    @commands.command(name="resume", help="It resumes the music.")
+    @commands.command(name="resume", help="It resumes the music.", aliases=["riprendi", "ricomincia"])
     async def resume(self, ctx):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
@@ -163,7 +167,8 @@ class MusicCog(commands.Cog):
         await ctx.send('Music resumed.')
 
 
-    @commands.command(name="vol", help="It sets or gets the music volume.")
+    @commands.command(name="vol", help="It sets or gets the music volume.",
+                    aliases=["v", "volume"])
     async def vol(self, ctx, volume):
         if volume is None:
             await ctx.send(f"Volume is now set to {int(self.volume * 100)}")
