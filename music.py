@@ -23,7 +23,7 @@ import discord
 import os, sys
 
 
-class MusicCog(commands.Cog):
+class MusicBot(commands.Cog):
     def __init__(self, bot, prefix, volume):
         self.bot = bot # instance of commands.Bot class
         self.prefix = prefix # bot prefix [default=!]
@@ -222,7 +222,7 @@ class MusicCog(commands.Cog):
         await self.bot.close()
 
 
-    @commands.command(name="pause", help="It pauses the music.", aliases=["pausa"])
+    @commands.command(name="pause", help="It pauses the music.", aliases=["pausa", "ferma", "blocca"])
     async def pause(self, ctx):
         '''
         It pauses the music in the voice channel.
@@ -388,14 +388,15 @@ class CustomHelpCommand(commands.HelpCommand):
 
     # help command
     async def send_bot_help(self, mapping):
-        embed = discord.Embed(title="Help command")
+        embed = discord.Embed(title="Commands list")
         for cog, commands in mapping.items():
             filtered = await self.filter_commands(commands, sort=True)
             command_signatures = [self.get_command_signature(c) for c in filtered]
             if command_signatures:
-                cog_name = getattr(cog, "qualified_name", "No Category")
+                cog_name = getattr(cog, "qualified_name", "Help")
                 embed.add_field(name=cog_name, value="\n".join(command_signatures), inline=False)
 
+        embed.set_footer(text=f"Type {self.read_prefix()}help <command> to get more info about a specific command.")
         await self.get_destination().send(embed=embed)
 
 
@@ -403,9 +404,13 @@ class CustomHelpCommand(commands.HelpCommand):
     async def send_command_help(self, command):
         embed = discord.Embed(title=f"Command: '**{self.get_command_signature(command)}**'")
         embed.add_field(name="Function", value=command.help)
-        alias = command.aliases
-        if alias:
-            embed.add_field(name="Aliases", value=", ".join(alias), inline=False)
+        if command.aliases:
+            embed.add_field(name="Aliases", value=", ".join(command.aliases), inline=False)
 
-        channel = self.get_destination()
-        await channel.send(embed=embed)
+        await self.get_destination().send(embed=embed)
+
+
+    def read_prefix(self) -> str:
+        config = configparser.RawConfigParser()
+        config.read("settings.ini")
+        return config.get("variables", "prefix")

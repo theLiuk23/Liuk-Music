@@ -21,3 +21,4 @@ Liuk Del Valun - 14/07/2022 21:11:18 | ('query', <Member id=722922053384142879 n
 Liuk Del Valun - 14/07/2022 21:11:37 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=None chunked=True member_count=2>>)
 Liuk Del Valun - 14/07/2022 21:12:13 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=None chunked=True member_count=2>>)
 Liuk Del Valun - 14/07/2022 21:13:03 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=None chunked=True member_count=2>>)
+Liuk Del Valun - 15/07/2022 15:01:23 | Command raised an exception: AttributeError: 'CustomHelpCommand' object has no attribute 'prefix'
