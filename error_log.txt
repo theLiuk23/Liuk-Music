@@ -22,3 +22,7 @@ Liuk Del Valun - 14/07/2022 21:11:37 | ('query', <Member id=722922053384142879 n
 Liuk Del Valun - 14/07/2022 21:12:13 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=None chunked=True member_count=2>>)
 Liuk Del Valun - 14/07/2022 21:13:03 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=None chunked=True member_count=2>>)
 Liuk Del Valun - 15/07/2022 15:01:23 | Command raised an exception: AttributeError: 'CustomHelpCommand' object has no attribute 'prefix'
+Liuk Del Valun - 06/08/2022 17:40:09 | Command raised an exception: RuntimeError: PyNaCl library needed in order to use voice
+Liuk Del Valun - 06/08/2022 17:43:31 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 06/08/2022 17:49:20 | Command raised an exception: TypeError: TooLongVideo.__init__() missing 2 required positional arguments: 'title' and 'duration'
+Liuk Del Valun - 06/08/2022 17:53:23 | Command raised an exception: IndexError: list index out of range

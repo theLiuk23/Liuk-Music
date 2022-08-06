@@ -12,6 +12,7 @@ To install all the dependencies:
     change directory to the project folder (e.g.: $ cd Downloads/Discord-music-bot)
     run the following command: $ pip install -r requirements.txt
 '''
+
 from discord.ext import commands
 from discord.ext import tasks
 import datetime, time
@@ -315,6 +316,9 @@ class MusicBot(commands.Cog):
             await self.disconnect()
         with youtube_dl.YoutubeDL(self.YTDL_OPTIONS) as ytdl:
             video = ytdl.extract_info("ytsearch:%s" % self.queue[0], download=False)['entries'][0]
+            # print(video['formats'][0]['format'])
+            if 'audio only' not in video['formats'][0]['format']:
+                raise TypeError()
             self.song_info = {'source': video['formats'][0]['url'],
                             'title': video['title'],
                             'duration': video['duration'],
@@ -323,7 +327,7 @@ class MusicBot(commands.Cog):
                             'views': video['view_count'],
                             'url': video['webpage_url'] }
         if self.song_info['duration'] > 60 * 60 * 2:
-            raise exceptions.TooLongVideo()
+            raise exceptions.TooLongVideo(self.song_info['title'], self.song_info['duration'])
         self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
         self.voice.play(discord.FFmpegPCMAudio(self.song_info['source'], **self.FFMPEG_OPTIONS), after = self.after)
         self.voice.source = discord.PCMVolumeTransformer(self.voice.source, volume=self.volume)

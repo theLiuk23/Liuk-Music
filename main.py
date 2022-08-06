@@ -34,7 +34,7 @@ def read_setting(setting:str) -> str:
 
 def install_ffmpeg():
     try:
-      subprocess.check_output(['which', 'ffmpeg'])
+        subprocess.check_output(['which', 'ffmpeg'])
     except subprocess.CalledProcessError:
         return os.system("sudo apt-get install ffmpeg -y")
 
