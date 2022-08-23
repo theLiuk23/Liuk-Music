@@ -6,6 +6,16 @@ If you have any question, please write me at ldvcoding@gmail.com
 '''
 
 '''
+This script is structured as follows:
+    - imports
+    - loops
+    - listeners
+    - commands
+    - functions
+    - CustomHelpCommand
+'''
+
+'''
 These are compulsory libraries that the bot needs in order to work.
 To install all the dependencies:
     open a terminal window (Ctrl + alt + T)
