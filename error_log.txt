@@ -42,3 +42,4 @@ Liuk Del Valun - 23/08/2022 20:27:34 | Command raised an exception: NameError: n
 Liuk Del Valun - 23/08/2022 20:28:16 | Command raised an exception: TypeError: 
 Liuk Del Valun - 23/08/2022 20:29:02 | Command raised an exception: TypeError: 
 Liuk Del Valun - 23/08/2022 20:34:31 | Command raised an exception: TypeError: 
+Liuk Del Valun - 23/08/2022 20:37:01 | Command raised an exception: TypeError: string indices must be integers

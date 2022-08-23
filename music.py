@@ -156,7 +156,7 @@ class MusicBot(commands.Cog):
 
 
     @commands.cooldown(1, 3, commands.BucketType.user) # 0 == default = global 
-    @commands.command(help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.",
+    @commands.command(name="p", help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.",
                     aliases=["play", "reproduce", "rec", "suona", "riproduci", "musica"])
     async def p(self, ctx, *query):
         '''
@@ -176,7 +176,15 @@ class MusicBot(commands.Cog):
             await self.play_music()    
 
 
-    @commands.command(help="It disconnects the bot from its voice channel.",
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.command(name="pl", help="It plays all the songs in a saved playlist.",
+                    aliases=["playlist", "album", "raccolta"])
+    async def pl(self, ctx, name=None):
+        pass
+    # TODO
+
+
+    @commands.command(name="stop", help="It disconnects the bot from its voice channel.",
                     aliases=["disconnect", "shut up", "basta", "zitto", "citu", "disconnetti", "disconnettiti"])
     async def stop(self, ctx):
         '''
@@ -186,7 +194,7 @@ class MusicBot(commands.Cog):
         await self.disconnect()
 
 
-    @commands.command(help="It stops the current playing song to play the next song.",
+    @commands.command(name="skip", help="It stops the current playing song to play the next song.",
                     aliases=["next", "pass", "prossima", "salta"])
     async def skip(self, ctx):
         '''
@@ -329,11 +337,8 @@ class MusicBot(commands.Cog):
             raise exceptions.NoSongsToBeSaved(ctx.author)
 
         with open(f"playlists/{name}.ini", "w") as file:
-            for song in self.played_songs:
-                file.write(f"{song['title']}\n")
-            file.write(f"{self.song_info['title']}\n")
-            for song in self.queue:
-                file.write(f"{song['title']}\n")
+            for song in (self.played_songs + self.queue):
+                file.write(f"{song}\n")
 
 
 
