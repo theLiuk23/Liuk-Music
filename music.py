@@ -18,7 +18,7 @@ This script is structured as follows:
 '''
 These are compulsory libraries that the bot needs in order to work.
 To install all the dependencies:
-    open a terminal window (Ctrl + alt + T)
+    open a terminal window (ctrl + alt + T)
     change directory to the project folder (e.g.: $ cd Downloads/Discord-music-bot)
     run the following command: $ pip install -r requirements.txt
 '''
@@ -44,12 +44,14 @@ class MusicBot(commands.Cog):
         self.song_info = None # dictionary containing the info of the current playing song
         self.played_songs = [] # list containing the titles of already played songs
         self.queue = [] # list containing the titles of the songs which are going to be played
+        self.playlists = [] # list of all the saved playlists' names
         self.YTDL_OPTIONS = { # options for youtube_dl library
             'format': 'bestaudio',
             'ignoreerrors':'True',
             'noplaylist': 'True',
             'nowarnings': 'True',
-            'quiet': 'True' }
+            'quiet': 'True',
+            'cookiefile': "~/.local/bin/youtube.com_cookies.txt"}
         self.FFMPEG_OPTIONS = { # options for FFMPEG library
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn -hide_banner -loglevel error' }
@@ -105,6 +107,7 @@ class MusicBot(commands.Cog):
             self.check_music.start()
         if not self.check_members.is_running():
             self.check_members.start()
+        await self.load_playlists()
         print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))           
 
 
@@ -163,7 +166,7 @@ class MusicBot(commands.Cog):
         if len(query) <= 0:
             raise exceptions.MissingRequiredArgument("query", ctx.author)
         if ctx.author.voice is None:
-            raise exceptions.NotConnected("Bot")
+            raise exceptions.NotConnected(ctx.author)
         if self.voice is None:
             await self.connect(ctx)
         query = " ".join(query)
@@ -261,7 +264,7 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="vol", help="It sets or gets the music volume.",
                     aliases=["v", "volume"])
-    async def vol(self, ctx, volume):
+    async def vol(self, ctx, volume=None):
         '''
         It sets or gets the music volume.
         '''
@@ -294,8 +297,8 @@ class MusicBot(commands.Cog):
         await self.reload_bot()
 
 
-    @commands.command(name="rm", help="It removes a song from the queue.")
-    async def rm(self, ctx, index):
+    @commands.command(name="rm", help="It removes a song from the queue by index.")
+    async def rm(self, ctx, index=None):
         '''
         It removes a query from the self.queue list by index.
         '''
@@ -311,6 +314,26 @@ class MusicBot(commands.Cog):
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
 
+
+    @commands.command(name="playlist", help="It creates a playlist with all the played, playing and on-queue songs.")
+    async def playlist(self, ctx, name=None):
+        '''
+        It creates a playlist with all the played, playing and on-queue songs.
+        '''
+        if name is None:
+            await ctx.send("\n".join(self.playlists))
+            return
+        if name in self.playlists:
+            raise exceptions.BadArgument(name, "The playlist already exists.")
+        if len(self.played_songs) == 0 or len(self.queue) == 0:
+            raise exceptions.NoSongsToBeSaved(ctx.author)
+
+        with open(f"playlists/{name}.ini", "w") as file:
+            for song in self.played_songs:
+                file.write(f"{song['title']}\n")
+            file.write(f"{self.song_info['title']}\n")
+            for song in self.queue:
+                file.write(f"{song['title']}\n")
 
 
 
@@ -391,6 +414,11 @@ class MusicBot(commands.Cog):
         with open("error_log.txt", "a") as file:
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             file.write(f"{author.name} - {time} | {str(error)}\n")
+
+
+    async def load_playlists(self):
+        for playlist in os.listdir("playlists"):
+            self.playlists.append(playlist.removesuffix(".ini"))
 
 
 

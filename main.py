@@ -3,7 +3,7 @@ This is the main python script that will be launched to make the bot online.
 Here's a list of the functions it will do:
     - check if ffmpeg is already installed in the machine
     - read some useful varibles in the settings.ini file (hidden from the GitHub repository) like the bot token and the prefix
-    - launch the client instance with all the available commands.
+    - launch the bot instance with all the available commands.
 Some functions like the one to install ffmpeg are made specifically for Linux; if you're using another OS please be aware of some possible problems.
 If you want to get more information, please visit my GitHub Repository at https://github.com/theLiuk23/Discord-music-bot.
 If you have any question, please write me at ldvcoding@gmail.com
@@ -14,15 +14,17 @@ from discord.ext import commands
 import configparser
 import exceptions
 import subprocess
+import asyncio
 import discord
+import os, sys
 import music
-import os
 
 
 config = configparser.RawConfigParser()
-intents = discord.Intents.default()
-intents.members = True
-intents.guilds = True
+
+token = None
+prefix = None
+volume = None
 
 
 def read_setting(setting:str) -> str:
@@ -39,17 +41,21 @@ def install_ffmpeg():
         return os.system("sudo apt-get install ffmpeg -y")
 
 
+async def initiate_bot():
+    await bot.add_cog(music.MusicBot(bot, prefix, float(volume)))
+    await bot.start(token)
+
+
 if __name__ == "__main__":
     install_ffmpeg()
-    try:
-        token = read_setting("token")
-        prefix = read_setting("prefix")
-        volume = read_setting("volume")
-    except exceptions.OptionNotFound as error:
-        print(error.message())
-    if token is None or prefix is None or volume is None:
-        raise exceptions.OptionNotFound(token, prefix, volume)
+    token = read_setting("token")
+    prefix = read_setting("prefix")
+    volume = read_setting("volume")
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
-    client = commands.Bot(command_prefix=prefix, intents=intents, activity=activity, help_command=music.CustomHelpCommand())
-    client.add_cog(music.MusicBot(client, prefix, float(volume)))
-    client.run(token, bot=True)
+    bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), activity=activity, help_command=music.CustomHelpCommand())
+    task = None
+    try:
+        asyncio.run(initiate_bot())
+    except KeyboardInterrupt:
+        # avoid annoying warnings by asyncio
+        sys.exit(0)

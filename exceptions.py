@@ -75,3 +75,8 @@ class BadArgument(commands.CommandError):
 class CommandNotFound(commands.CommandError):
     def __init__(self):
         self.message = f"The command was not found! LOL"
+
+
+class NoSongsToBeSaved(commands.CommandError):
+    def __init__(self, author:discord.Member=None):
+        self.message = "Both the queue and the list containing all the previously played songs are empty."
