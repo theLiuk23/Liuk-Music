@@ -23,6 +23,7 @@ To install all the dependencies:
     run the following command: $ pip install -r requirements.txt
 '''
 
+from threading import Thread
 from discord.ext import commands
 from discord.ext import tasks
 import datetime, time
@@ -32,6 +33,7 @@ import exceptions
 import asyncio
 import discord
 import os, sys
+import beepy
 
 
 class MusicBot(commands.Cog):
@@ -85,7 +87,7 @@ class MusicBot(commands.Cog):
             if self.check2 >= 3:
                 await self.disconnect()
                 return
-            if not self.voice.is_playing():
+            if not self.voice.is_playing() and not self.voice.is_paused():
                 self.check2 += 1
             else:
                 self.check2 = 0
@@ -108,7 +110,10 @@ class MusicBot(commands.Cog):
         if not self.check_members.is_running():
             self.check_members.start()
         await self.load_playlists()
-        print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))           
+        print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(beepy.beep(4))
+
 
 
     @commands.Cog.listener()
@@ -171,17 +176,31 @@ class MusicBot(commands.Cog):
             await self.connect(ctx)
         query = " ".join(query)
         self.queue.append(query)
-        await ctx.send("Song added to the queue!")
+        await ctx.send(f"Song '{query}' added to the queue!")
         if not self.voice.is_playing():
             await self.play_music()    
 
 
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.command(name="pl", help="It plays all the songs in a saved playlist.",
-                    aliases=["playlist", "album", "raccolta"])
-    async def pl(self, ctx, name=None):
-        pass
-    # TODO
+                    aliases=["album", "raccolta"])
+    async def pl(self, ctx, *name:str):
+        name = "_".join(name)
+        if name is None:
+            raise exceptions.MissingRequiredArgument("playlist name", ctx.author)
+        name = name.strip()
+        name = name.replace(' ', '_')
+        if name.lower() not in self.playlists:
+            raise exceptions.BadArgument("playlist name", "The playlist does not exist.")
+        
+        with open(f'playlists/{name}.ini', 'r') as file:
+            for line in file.readlines():
+                self.queue.append(line)
+
+        await ctx.send(f"Playlist '{name}' added to the queue!")
+
+        await self.connect(ctx)
+        await self.play_music()
 
 
     @commands.command(name="stop", help="It disconnects the bot from its voice channel.",
@@ -302,7 +321,7 @@ class MusicBot(commands.Cog):
         It makes the bot go offline and online again. (see self.reload_bot() function)
         You must be the owner.
         '''
-        await self.reload_bot()
+        await self.reload_bot(ctx)
 
 
     @commands.command(name="rm", help="It removes a song from the queue by index.")
@@ -324,13 +343,15 @@ class MusicBot(commands.Cog):
 
 
     @commands.command(name="playlist", help="It creates a playlist with all the played, playing and on-queue songs.")
-    async def playlist(self, ctx, name=None):
+    async def playlist(self, ctx, *name:str):
         '''
         It creates a playlist with all the played, playing and on-queue songs.
         '''
-        if name is None:
-            await ctx.send("\n".join(self.playlists))
+        name = "_".join(name)
+        if len(name) == 0:
+            await ctx.send("Here's a list of the saved playlists:\n" + "\n".join("[{}] {}".format(i, pl) for i, pl in enumerate(self.playlists, start=1)))
             return
+        name = name.strip()
         if name in self.playlists:
             raise exceptions.BadArgument(name, "The playlist already exists.")
         if len(self.played_songs) == 0 or len(self.queue) == 0:
@@ -340,7 +361,7 @@ class MusicBot(commands.Cog):
             for song in (self.played_songs + self.queue):
                 file.write(f"{song}\n")
 
-
+        await self.load_playlists()
 
 
 
@@ -409,7 +430,6 @@ class MusicBot(commands.Cog):
         embed.add_field(name="Title", value=self.song_info['title'], inline = True)
         embed.add_field(name="Channel", value=self.song_info['channel'], inline = True)
         embed.add_field(name="Views", value=f"{self.song_info['views']:,}", inline = True)
-        # embed.add_field(name="Time Stamp", value=f'{time_stamp} ({percentage}%)', inline = True)
         embed.add_field(name="Duration", value=time.strftime('%H:%M:%S', time.gmtime(self.song_info['duration'])), inline = True)
         embed.add_field(name="Link", value=f"[YouTube]({self.song_info['url']})")
         await ctx.send(embed=embed)
@@ -422,9 +442,10 @@ class MusicBot(commands.Cog):
 
 
     async def load_playlists(self):
+        self.playlists = []
+
         for playlist in os.listdir("playlists"):
             self.playlists.append(playlist.removesuffix(".ini"))
-
 
 
 
