@@ -437,8 +437,10 @@ class MusicBot(commands.Cog):
 
     async def append_error_log(self, error, author, handled=False):
         with open("error_log.txt", "a") as file:
+            text = f"{author.name} - {time} | {str(error)}\n"
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            file.write(f"{author.name} - {time} | {str(error)}\n")
+            file.write(text)
+            print(f"EXCEPTION: '{text}'")
 
 
     async def load_playlists(self):
