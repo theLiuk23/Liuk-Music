@@ -25,12 +25,12 @@ To install all the dependencies:
 
 from discord.ext import commands
 from discord.ext import tasks
-import inspect
 import datetime, time
 import configparser
 import youtube_dl
 import exceptions
 import asyncio
+import inspect
 import discord
 import os, sys
 import beepy
@@ -42,6 +42,7 @@ class MusicBot(commands.Cog):
         self.prefix = prefix # bot prefix [default=!]
         self.volume = volume # music volume (between 0.0 and 2.0)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
+        self.loop = False # bool if bot has to play the same song 
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
         self.song_info = None # dictionary containing the info of the current playing song
         self.played_songs = [] # list containing the titles of already played songs
@@ -355,6 +356,26 @@ class MusicBot(commands.Cog):
         await self.load_playlists()
 
 
+    @commands.command(name="join", help="Join the voice channel")
+    async def join(self, ctx):
+        '''
+        joins the channel
+        '''
+        if self.voice is None:
+            await self.connect()
+
+
+    @commands.command(name="loop", help="If set to true, it plays the same song in loop")
+    async def loop(self, ctx):
+        '''
+        It changes a bool if the bot has to
+        '''
+        self.loop = not self.loop
+        if self.loop == True:
+            await ctx.send("The song will be played on loop.")
+        else:
+            await ctx.send("Loop is now disabled.")
+
 
 
 
@@ -366,7 +387,6 @@ class MusicBot(commands.Cog):
             await self.disconnect()
         with youtube_dl.YoutubeDL(self.YTDL_OPTIONS) as ytdl:
             video = ytdl.extract_info("ytsearch:%s" % self.queue[0], download=False)['entries'][0]
-            # print(video['formats'][0]['format'])
             if 'audio only' not in video['formats'][0]['format']:
                 raise TypeError()
             self.song_info = {'source': video['formats'][0]['url'],
@@ -378,7 +398,8 @@ class MusicBot(commands.Cog):
                             'url': video['webpage_url'] }
         if self.song_info['duration'] > 60 * 60 * 2:
             raise exceptions.CustomExceptions.TooLongVideo(self.song_info['title'], self.song_info['duration'])
-        self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
+        if self.loop is False:
+            self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
         self.voice.play(discord.FFmpegPCMAudio(self.song_info['source'], **self.FFMPEG_OPTIONS), after = self.after)
         self.voice.source = discord.PCMVolumeTransformer(self.voice.source, volume=self.volume)
 
@@ -410,7 +431,7 @@ class MusicBot(commands.Cog):
 
     
     async def reload_bot(self, ctx):
-        await ctx.send("The bot is now relaoding.")
+        await ctx.send("The bot is now reloading.")
         await self.bot.close()
         os.execv(sys.executable, ['python3'] + ['main.py'])
 
@@ -481,3 +502,7 @@ class CustomHelpCommand(commands.HelpCommand):
         config = configparser.RawConfigParser()
         config.read("settings.ini")
         return config.get("variables", "prefix")
+
+
+# loop
+# offline reload fuori help
