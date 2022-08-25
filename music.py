@@ -37,8 +37,9 @@ import beepy
 
 
 class MusicBot(commands.Cog):
-    def __init__(self, bot, prefix, volume):
+    def __init__(self, bot, prefix, volume, bot_name):
         self.bot = bot # instance of commands.Bot class
+        self.bot_name = bot_name
         self.prefix = prefix # bot prefix [default=!]
         self.volume = volume # music volume (between 0.0 and 2.0)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
@@ -98,8 +99,6 @@ class MusicBot(commands.Cog):
 
 
 
-
-
     @commands.Cog.listener()
     async def on_ready(self):
         '''
@@ -115,6 +114,7 @@ class MusicBot(commands.Cog):
         await self.load_playlists()
         await self.load_exceptions()
         print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+        print(f'NAME: {self.bot_name}')
         loop = asyncio.get_event_loop()
         loop.run_until_complete(beepy.beep(4))
 
