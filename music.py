@@ -42,9 +42,10 @@ class MusicBot(commands.Cog):
         self.prefix = prefix # bot prefix [default=!]
         self.volume = volume # music volume (between 0.0 and 2.0)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
-        self.loop = False # bool if bot has to play the same song 
+        self.bool_loop = False # bool if bot has to play the same song 
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
         self.song_info = None # dictionary containing the info of the current playing song
+        self.votes = []
         self.played_songs = [] # list containing the titles of already played songs
         self.queue = [] # list containing the titles of the songs which are going to be played
         self.playlists = [] # list of all the saved playlists' names
@@ -370,13 +371,36 @@ class MusicBot(commands.Cog):
         '''
         It changes a bool if the bot has to
         '''
-        self.loop = not self.loop
-        if self.loop == True:
+        self.bool_loop = not self.bool_loop
+        if self.bool_loop == True:
             await ctx.send("The song will be played on loop.")
         else:
             await ctx.send("Loop is now disabled.")
 
 
+    @commands.command(name="vote", help="It counts how many votes are needed to skip the song.")
+    async def vote(self, ctx):
+        '''
+        It sums up user votes
+        when votes are more than 50% than members it skips song
+        '''
+        author = ctx.author
+        if self.voice is None:
+            raise exceptions.CustomExceptions.NotConnected("Bot")
+        members_count = len(self.voice.channel.members) - 1
+
+        if author.name not in self.votes:
+            self.votes.append(author.name)
+            await ctx.send(f'{author.name}, your vote has been recorded.')
+        else:
+            await ctx.send(f'{author.name}, you have already voted.')
+
+        if len(self.votes) > (members_count / 2):
+            if self.voice is None:
+                raise exceptions.CustomExceptions.NotConnected("Bot")
+            await ctx.send(f"Votes are {len(self.votes)}/{members_count}. Skipping to the next song.")
+            self.votes = []
+            self.voice.stop()
 
 
 
@@ -398,7 +422,7 @@ class MusicBot(commands.Cog):
                             'url': video['webpage_url'] }
         if self.song_info['duration'] > 60 * 60 * 2:
             raise exceptions.CustomExceptions.TooLongVideo(self.song_info['title'], self.song_info['duration'])
-        if self.loop is False:
+        if self.bool_loop is False:
             self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
         self.voice.play(discord.FFmpegPCMAudio(self.song_info['source'], **self.FFMPEG_OPTIONS), after = self.after)
         self.voice.source = discord.PCMVolumeTransformer(self.voice.source, volume=self.volume)
@@ -502,7 +526,3 @@ class CustomHelpCommand(commands.HelpCommand):
         config = configparser.RawConfigParser()
         config.read("settings.ini")
         return config.get("variables", "prefix")
-
-
-# loop
-# offline reload fuori help
