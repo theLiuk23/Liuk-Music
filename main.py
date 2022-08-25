@@ -16,8 +16,8 @@ import exceptions
 import subprocess
 import asyncio
 import discord
-import os, sys
 import music
+import os
 
 
 config = configparser.RawConfigParser()
@@ -53,9 +53,16 @@ if __name__ == "__main__":
     volume = read_setting("volume")
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
     bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), activity=activity, help_command=music.CustomHelpCommand())
-    task = None
+    
+    # create loop
+    loop = asyncio.new_event_loop()
+    # create a future
+    asyncio.ensure_future(initiate_bot(), loop=loop)
     try:
-        asyncio.run(initiate_bot())
+        # loop runs until stop is called
+        loop.run_forever()
     except KeyboardInterrupt:
-        # avoid annoying warnings by asyncio
-        sys.exit(0)
+        pass
+    finally:
+        # stop and close loop
+        loop.stop()
