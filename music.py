@@ -32,6 +32,7 @@ import exceptions
 import asyncio
 import discord
 import os, sys
+import inspect
 
 
 
@@ -111,6 +112,7 @@ class MusicBot(commands.Cog):
         if not self.check_members.is_running():
             self.check_members.start()
         await self.load_playlists()
+        print("-"*30)
         print(f'Bot "{self.bot_name}" is now ONLINE -', datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 
@@ -129,6 +131,9 @@ class MusicBot(commands.Cog):
             - ChannelNotFound
             - MissingPermissions
         '''
+        for name, obj in inspect.getmembers(sys.modules[__name__]):
+            if inspect.isclass(obj) and isinstance(error, obj):
+                await ctx.send(obj().message())
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(f"This is not an available command.\nType {self.prefix}help to get a list of the available commands.")
         elif isinstance(error, commands.CheckFailure):
