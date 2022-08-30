@@ -32,7 +32,6 @@ import exceptions
 import asyncio
 import discord
 import os, sys
-import beepy
 
 
 
@@ -112,10 +111,7 @@ class MusicBot(commands.Cog):
         if not self.check_members.is_running():
             self.check_members.start()
         await self.load_playlists()
-        print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
-        print(f'NAME: {self.bot_name}')
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(beepy.beep(4))
+        print(f'Bot "{self.bot_name}" is now ONLINE -', datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 
 
