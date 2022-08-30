@@ -131,7 +131,7 @@ class MusicBot(commands.Cog):
             - ChannelNotFound
             - MissingPermissions
         '''
-        for name, obj in inspect.getmembers(sys.modules[__name__]):
+        for _, obj in inspect.getmembers(sys.modules[__name__]):
             if inspect.isclass(obj) and isinstance(error, obj):
                 await ctx.send(obj().message())
         if isinstance(error, commands.CommandNotFound):
@@ -151,7 +151,7 @@ class MusicBot(commands.Cog):
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send("You don't have the required permissions to run this command: \n{0}".format('\n'.join(error.missing_perms)))
         else:
-            await self.append_error_log(error, ctx.author, handled=False)
+            await self.append_error_log(error, ctx.author)
             await ctx.send("An unexpected error occured. If it persists please contact the owner of the bot:\n" +
                             "**Discord:** Liuk Del Valun #3966\n" + 
                             "**Email:** ldvcoding@gmail.com")
@@ -489,12 +489,12 @@ class MusicBot(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    async def append_error_log(self, error, author, handled=False):
+    async def append_error_log(self, error, author):
         with open("error_log.txt", "a") as file:
             text = f"{author.name} - {time} | {str(error)}\n"
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            print(f"EXCEPTION: '{text}'")
             file.write(text)
+        print(f"EXCEPTION: '{text}'")
 
 
     async def load_playlists(self):
