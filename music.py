@@ -41,7 +41,7 @@ class MusicBot(commands.Cog):
         self.bot = bot # instance of commands.Bot class
         self.bot_name = bot_name
         self.prefix = prefix # bot prefix [default=!]
-        self.volume = volume # music volume (between 0.0 and 2.0)
+        self.volume_value = volume # music volume (between 0.0 and 2.0)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.bool_loop = False # bool if bot has to play the same song 
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
@@ -112,7 +112,7 @@ class MusicBot(commands.Cog):
         if not self.check_members.is_running():
             self.check_members.start()
         await self.load_playlists()
-        print("-"*30)
+        print("-"*52)
         print(f'Bot "{self.bot_name}" is now ONLINE -', datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 
@@ -162,8 +162,9 @@ class MusicBot(commands.Cog):
 
 
     @commands.cooldown(1, 3, commands.BucketType.user)
-    @commands.command(name="p", help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.")
-    async def p(self, ctx, *query):
+    @commands.command(name="play", help="It seaches on YouTube the first result with the given query and plays it in the user's voice channel.",
+                    aliases=["p", "song", "music"])
+    async def play(self, ctx, *query):
         '''
         It appends the user query to the queue list\n
         If the bot is not already playing in a voice channel, it runs the self.play_music() function.
@@ -186,7 +187,8 @@ class MusicBot(commands.Cog):
 
 
     @commands.cooldown(1, 3, commands.BucketType.user)
-    @commands.command(name="pl", help="It plays all the songs in a saved playlist.")
+    @commands.command(name="pl", help="It plays all the songs in a saved playlist.",
+                    aliases=["album", "set", "collection", "col"])
     async def pl(self, ctx, *name:str):
         name = "_".join(name)
         if name is None:
@@ -210,7 +212,8 @@ class MusicBot(commands.Cog):
             await ctx.send("The video is either a playlist or it is too long. (more than 2 hours long)")
 
 
-    @commands.command(name="stop", help="It disconnects the bot from its voice channel.")
+    @commands.command(name="stop", help="It disconnects the bot from its voice channel.",
+                    aliases=["stfu", "disconnect", "out", "away"])
     async def stop(self, ctx):
         '''
         It disconnects the bot from the voice channel.\n
@@ -219,7 +222,8 @@ class MusicBot(commands.Cog):
         await self.disconnect()
 
 
-    @commands.command(name="skip", help="It stops the current playing song to play the next song.")
+    @commands.command(name="skip", help="It stops the current playing song to play the next song.",
+                    aliases=["next", "incoming"])
     async def skip(self, ctx):
         '''
         It stops the current playing song (so the next one in the queue will start).
@@ -231,8 +235,9 @@ class MusicBot(commands.Cog):
 
 
     @commands.cooldown(1, 10, commands.BucketType.user)  # 0 == default = global
-    @commands.command(name="np", help="It shows some information about the current playing song.")
-    async def np(self, ctx):
+    @commands.command(name="nowplaying", help="It shows some information about the current playing song.",
+                    aliases=["np", "info"])
+    async def nowplaying(self, ctx):
         '''
         It sends an embed containing all the info about the current playing song.
         '''
@@ -245,7 +250,8 @@ class MusicBot(commands.Cog):
         await self.send_np_embed(ctx)
 
 
-    @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.")
+    @commands.command(name="queue", help="It shows a list of songs that are going to be played soon.",
+                    aliases=["upcoming", "list"])
     async def next(self, ctx):
         '''
         It shows a list containing all the queries in the 'self.queue' list
@@ -269,7 +275,7 @@ class MusicBot(commands.Cog):
         await self.bot.close()
 
 
-    @commands.command(name="pause", help="It pauses the music.")
+    @commands.command(name="pause", help="It pauses the music.", aliases=["break"])
     async def pause(self, ctx):
         '''
         It pauses the music in the voice channel.
@@ -284,7 +290,8 @@ class MusicBot(commands.Cog):
         await ctx.send('Music paused.')
 
 
-    @commands.command(name="resume", help="It resumes the music.")
+    @commands.command(name="resume", help="It resumes the music.", 
+                    aliases=["takeback", "playagain"])
     async def resume(self, ctx):
         '''
         It resumes the music in the voice channel.
@@ -299,13 +306,14 @@ class MusicBot(commands.Cog):
         await ctx.send('Music resumed.')
 
 
-    @commands.command(name="vol", help="It sets or gets the music volume.")
-    async def vol(self, ctx, volume=None):
+    @commands.command(name="volume", help="It sets or gets the music volume.",
+                    aliases=["vol", "loudness", "sound"])
+    async def volume(self, ctx, volume:int):
         '''
         It sets or gets the music volume.
         '''
-        if volume is None:
-            await ctx.send(f"Volume is now set to {int(self.volume * 100)}")
+        if len(volume) == 0:
+            await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}")
         else:
             if not str.isdigit(volume):
                 await ctx.send(exceptions.BadArgumentType(volume, type(volume), int, ctx.author).message())
@@ -314,7 +322,7 @@ class MusicBot(commands.Cog):
             if volume < 0 or volume > 200:
                 await ctx.send(exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author).message())
                 return
-            self.volume = float(volume / 100)
+            self.volume_value = float(volume / 100)
             await ctx.send(f"Volume is now set to {volume}%")
             if self.voice is not None:
                 self.voice.source.volume = float(volume / 100)
@@ -335,8 +343,19 @@ class MusicBot(commands.Cog):
         await self.reload_bot(ctx)
 
 
-    @commands.command(name="rm", help="It removes a song from the queue by index.")
-    async def rm(self, ctx, index):
+    @commands.command(name="clear", help="It clears out the queue",
+                    aliases=["erase", "wipe"])
+    async def clear(self, ctx):
+        '''
+        It clears out the queue
+        '''
+        self.queue = []
+        await ctx.send("Queue erased!")
+
+
+    @commands.command(name="rm", help="It removes a song from the queue by index.",
+                    aliases=["remove", "eliminate", "delete"])
+    async def rm(self, ctx, index:int):
         '''
         It removes a query from the self.queue list by index.
         '''
@@ -357,7 +376,8 @@ class MusicBot(commands.Cog):
         self.queue.pop(index - 1)
 
 
-    @commands.command(name="playlist", help="It creates a playlist with all the played, playing and on-queue songs.")
+    @commands.command(name="playlist", help="It creates a playlist with all the played, playing and on-queue songs.",
+                    aliases=["remember", "save"])
     async def playlist(self, ctx, *name:str):
         '''
         It creates a playlist with all the played, playing and on-queue songs.
@@ -381,7 +401,8 @@ class MusicBot(commands.Cog):
         await self.load_playlists()
 
 
-    @commands.command(name="loop", help="If set to true, it plays the same song in loop")
+    @commands.command(name="loop", help="If set to true, it plays the same song in loop",
+                    aliases=["playback", "again"])
     async def loop(self, ctx):
         '''
         It changes a bool if the bot has to
@@ -393,7 +414,8 @@ class MusicBot(commands.Cog):
             await ctx.send("Loop is now disabled.")
 
 
-    @commands.command(name="vote", help="It counts how many users voted to skip the song (Votes must be more than 50% than the number of memebers in the voice channel).")
+    @commands.command(name="vote", help="It counts how many users voted to skip the song (more than 50% votes needed)",
+                    aliases=["poll"])
     async def vote(self, ctx):
         '''
         It sums up user votes
@@ -443,7 +465,7 @@ class MusicBot(commands.Cog):
         if self.bool_loop is False:
             self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
         self.voice.play(discord.FFmpegPCMAudio(self.song_info['source'], **self.FFMPEG_OPTIONS), after = self.after)
-        self.voice.source = discord.PCMVolumeTransformer(self.voice.source, volume=self.volume)
+        self.voice.source = discord.PCMVolumeTransformer(self.voice.source, volume=self.volume_value)
 
     
     def after(self, error):
@@ -512,29 +534,21 @@ class CustomHelpCommand(commands.HelpCommand):
 
     # help command
     async def send_bot_help(self, mapping):
-        embed = discord.Embed(title="Commands list")
-        for cog, commands in mapping.items():
-            filtered = await self.filter_commands(commands, sort=True)
-            command_signatures = [self.get_command_signature(c) for c in filtered]
-            if command_signatures:
-                cog_name = getattr(cog, "qualified_name", "Help")
-                embed.add_field(name=cog_name, value="\n".join(command_signatures), inline=False)
-
-        embed.set_footer(text=f"Type {self.read_prefix()}help <command> to get more info about a specific command.")
+        embed = discord.Embed(title="Help command")
+        embed.set_footer(text=f"HINT: Type {MusicBot().prefix}help <command name> to get more information about the single command.")
+        for cog in mapping:
+            names = [command.name for command in mapping[cog]]
+            helps = [command.help for command in mapping[cog]]
+            dictionary = dict(zip(names, helps))
+            for key in sorted(dictionary):
+                embed.add_field(name=key, value=dictionary[key])
         await self.get_destination().send(embed=embed)
 
 
     # help <command> command
     async def send_command_help(self, command):
-        embed = discord.Embed(title=f"Command: '**{self.get_command_signature(command)}**'")
+        embed = discord.Embed(title=f"Command: '**{str(command).upper()}**'")
         embed.add_field(name="Function", value=command.help)
         if command.aliases:
-            embed.add_field(name="Aliases", value=", ".join(command.aliases), inline=False)
-
+            embed.add_field(name="Aliases", value=f'**{command}**, ' + ", ".join(command.aliases), inline=False)
         await self.get_destination().send(embed=embed)
-
-
-    def read_prefix(self) -> str:
-        config = configparser.RawConfigParser()
-        config.read("settings.ini")
-        return config.get("variables", "prefix")
