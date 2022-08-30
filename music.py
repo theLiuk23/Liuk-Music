@@ -35,10 +35,6 @@ import os, sys
 import beepy
 
 
-''' TODO:
-FILL ALL EXCEPTIONS WITH MESSAGE FUNCTION!!!
-'''
-
 
 class MusicBot(commands.Cog):
     def __init__(self, bot, prefix, volume, bot_name):
@@ -243,7 +239,7 @@ class MusicBot(commands.Cog):
             await ctx.send(exceptions.NotConnected("Bot").message())
             return
         if not self.voice.is_playing():
-            await ctx.send(exceptions.BotIsNotPlaying(self.voice.channel, ctx.author))
+            await ctx.send(exceptions.BotIsNotPlaying(self.voice.channel, ctx.author).message())
             return
         await self.send_np_embed(ctx)
 
@@ -254,7 +250,7 @@ class MusicBot(commands.Cog):
         It shows a list containing all the queries in the 'self.queue' list
         '''
         if len(self.queue) <= 0:
-            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author))
+            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author).message())
             return
         await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
 
@@ -278,10 +274,10 @@ class MusicBot(commands.Cog):
         It pauses the music in the voice channel.
         '''
         if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot"))
+            await ctx.send(exceptions.NotConnected("Bot").message())
             return
         if not self.voice.is_playing():
-            await ctx.send(exceptions.BotIsNotPlaying(ctx.author))
+            await ctx.send(exceptions.BotIsNotPlaying(ctx.author).message())
             return
         self.voice.pause()
         await ctx.send('Music paused.')
@@ -293,10 +289,10 @@ class MusicBot(commands.Cog):
         It resumes the music in the voice channel.
         '''
         if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot"))
+            await ctx.send(exceptions.NotConnected("Bot").message())
             return
         if self.voice.is_playing():
-            await ctx.send(exceptions.BotIsAlreadyPlaying(ctx.author))
+            await ctx.send(exceptions.BotIsAlreadyPlaying(ctx.author).message())
             return
         self.voice.resume()
         await ctx.send('Music resumed.')
@@ -311,11 +307,11 @@ class MusicBot(commands.Cog):
             await ctx.send(f"Volume is now set to {int(self.volume * 100)}")
         else:
             if not str.isdigit(volume):
-                await ctx.send(exceptions.BadArgumentType(volume, type(volume), int, ctx.author))
+                await ctx.send(exceptions.BadArgumentType(volume, type(volume), int, ctx.author).message())
                 return
             volume = int(volume)
             if volume < 0 or volume > 200:
-                await ctx.send(exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author))
+                await ctx.send(exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author).message())
                 return
             self.volume = float(volume / 100)
             await ctx.send(f"Volume is now set to {volume}%")
@@ -371,10 +367,10 @@ class MusicBot(commands.Cog):
             return
         name = name.strip()
         if name in self.playlists:
-            await ctx.send(exceptions.CustomExceptions.BadArgument(name, "The playlist already exists."))
+            await ctx.send(exceptions.BadArgument(name, "The playlist already exists.").message())
             return
         if len(self.played_songs) == 0 or len(self.queue) == 0:
-            await ctx.send(exceptions.NoSongsToBeSaved(ctx.author))
+            await ctx.send(exceptions.NoSongsToBeSaved(ctx.author).message())
             return
 
         with open(f"playlists/{name}.ini", "w") as file:
@@ -417,7 +413,7 @@ class MusicBot(commands.Cog):
 
         if len(self.votes) > (members_count / 2):
             if self.voice is None:
-                await ctx.send(exceptions.CustomExceptions.NotConnected("Bot"))
+                await ctx.send(exceptions.NotConnected("Bot").message())
                 return
             await ctx.send(f"Votes are {len(self.votes)}/{members_count}. Skipping to the next song.")
             self.votes = []
