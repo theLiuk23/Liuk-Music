@@ -30,10 +30,14 @@ import configparser
 import youtube_dl
 import exceptions
 import asyncio
-import inspect
 import discord
 import os, sys
 import beepy
+
+
+''' TODO:
+FILL ALL EXCEPTIONS WITH MESSAGE FUNCTION!!!
+'''
 
 
 class MusicBot(commands.Cog):
@@ -112,7 +116,6 @@ class MusicBot(commands.Cog):
         if not self.check_members.is_running():
             self.check_members.start()
         await self.load_playlists()
-        await self.load_exceptions()
         print("Bot is now ONLINE", datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
         print(f'NAME: {self.bot_name}')
         loop = asyncio.get_event_loop()
@@ -161,7 +164,7 @@ class MusicBot(commands.Cog):
 
 
 
-    @commands.cooldown(1, 3, commands.BucketType.user) # 0 == default = global 
+    @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.command(name="p", help="It seach on YouTube the first result with the query input by the user and plays that video's audio in the user's voice channel.")
     async def p(self, ctx, *query):
         '''
@@ -200,7 +203,7 @@ class MusicBot(commands.Cog):
         
         with open(f'playlists/{name}.ini', 'r') as file:
             for line in file.readlines():
-                self.queue.append(line)
+                self.queue.append(line.strip("\n"))
 
         await ctx.send(f"Playlist '{name}' added to the queue!")
 
@@ -341,17 +344,17 @@ class MusicBot(commands.Cog):
         It removes a query from the self.queue list by index.
         '''
         if len(index) == 0:
-            await ctx.send(exceptions.MissingRequiredArgument("song index", ctx.author))
+            await ctx.send(exceptions.MissingRequiredArgument("song index", ctx.author).message())
             return
         if not str.isdigit(index):
-            await ctx.send(exceptions.BadArgumentType(index, type(index), int, ctx.author))
+            await ctx.send(exceptions.BadArgumentType(index, type(index), int, ctx.author).message())
             return
         index = int(index) - 1
         if len(self.queue) <= 0:
-            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author))
+            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author).message())
             return
         if len(self.queue) < index or index <= 0:
-            await ctx.send(exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author))
+            await ctx.send(exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author).message())
             return
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
@@ -381,15 +384,6 @@ class MusicBot(commands.Cog):
         await self.load_playlists()
 
 
-    @commands.command(name="join", help="Join the voice channel")
-    async def join(self, ctx):
-        '''
-        joins the channel
-        '''
-        if self.voice is None:
-            await self.connect()
-
-
     @commands.command(name="loop", help="If set to true, it plays the same song in loop")
     async def loop(self, ctx):
         '''
@@ -414,11 +408,9 @@ class MusicBot(commands.Cog):
             return
         members_count = len(self.voice.channel.members) - 1
 
-        print(self.votes)
-
         if author.id not in self.votes:
             self.votes.append(author.id)
-            await ctx.send(f'{author.name}, your vote has been recorded.')
+            await ctx.send(f'{author.name}, your vote has been recorded. (current votes: {len(self.votes)}/{members_count})')
         else:
             await ctx.send(f'{author.name}, you have already voted.')
             return
@@ -513,12 +505,6 @@ class MusicBot(commands.Cog):
 
         for playlist in os.listdir("playlists"):
             self.playlists.append(playlist.removesuffix(".ini"))
-
-
-    async def load_exceptions(self):
-        for _, obj in inspect.getmembers(sys.modules[__name__]):
-            if inspect.isclass(obj):
-                self.exceptions.append(obj.__name__)
 
 
 
