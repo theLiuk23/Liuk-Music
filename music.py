@@ -504,7 +504,7 @@ class MusicBot(commands.Cog):
         embed = discord.Embed(title="**__Now playing__**")
         embed.set_image(url=self.song_info['thumbnails'][-1]['url'])
         embed.add_field(name="Title", value=self.song_info['title'], inline = True)
-        embed.add_field(name="Channel", value=self.song_info['channel'], inline = True)
+        embed.add_field(name="Channel", value=self.song_info['channel'], inline = False)
         embed.add_field(name="Views", value=f"{self.song_info['views']:,}", inline = True)
         embed.add_field(name="Duration", value=time.strftime('%H:%M:%S', time.gmtime(self.song_info['duration'])), inline = True)
         embed.add_field(name="Link", value=f"[YouTube]({self.song_info['url']})")
