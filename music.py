@@ -131,9 +131,8 @@ class MusicBot(commands.Cog):
             - ChannelNotFound
             - MissingPermissions
         '''
-        for _, obj in inspect.getmembers(sys.modules[__name__]):
-            if inspect.isclass(obj) and isinstance(error, obj):
-                await ctx.send(obj().message())
+        # TODO
+        print(error)
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(f"This is not an available command.\nType {self.prefix}help to get a list of the available commands.")
         elif isinstance(error, commands.CheckFailure):
@@ -170,16 +169,17 @@ class MusicBot(commands.Cog):
         If the bot is not already playing in a voice channel, it runs the self.play_music() function.
         '''
         if len(query) <= 0:
-            await ctx.send(exceptions.MissingRequiredArgument("query", ctx.author).message())
-            return
+            raise exceptions.MissingRequiredArgument("query", ctx.author)
         if ctx.author.voice is None:
-            await ctx.send(exceptions.NotConnected(ctx.author).message())
-            return
+            raise exceptions.NotConnected(ctx.author)
         if self.voice is None:
             await self.connect(ctx)
         query = " ".join(query)
         self.queue.append(query)
-        await ctx.send(f"Song '{query}' added to the queue!")
+        if query.startswith("http"):
+            await ctx.send("Link added to the queue!")
+        else:
+            await ctx.send(f"Song '{query}' added to the queue!")
         if not self.voice.is_playing():
             result = await self.play_music()    
             if result is False:
@@ -187,18 +187,16 @@ class MusicBot(commands.Cog):
 
 
     @commands.cooldown(1, 3, commands.BucketType.user)
-    @commands.command(name="pl", help="It plays all the songs in a saved playlist.",
-                    aliases=["album", "set", "collection", "col"])
-    async def pl(self, ctx, *name:str):
+    @commands.command(name="album", help="It plays all the songs in a saved playlist.",
+                    aliases=["pl", "set", "collection", "col"])
+    async def album(self, ctx, *name:str):
+        if len(name) == 0:
+            raise exceptions.MissingRequiredArgument("playlist name", ctx.author)
         name = "_".join(name)
-        if name is None:
-            await ctx.send(exceptions.MissingRequiredArgument("playlist name", ctx.author).message())
-            return
         name = name.strip()
         name = name.replace(' ', '_')
         if name.lower() not in self.playlists:
-            await ctx.send(exceptions.BadArgument("playlist name", "The playlist does not exist.").message())
-            return
+            raise exceptions.BadArgument("playlist name", "The playlist does not exist.")
         
         with open(f'playlists/{name}.ini', 'r') as file:
             for line in file.readlines():
@@ -227,11 +225,14 @@ class MusicBot(commands.Cog):
     async def skip(self, ctx):
         '''
         It stops the current playing song (so the next one in the queue will start).
+        only the owner can directly skip the song. Other users will simply add a vote.
         '''
-        if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot").message())
-            return
-        self.voice.stop()
+        if ctx.author == ctx.guild.owner:
+            if self.voice is None:
+                raise exceptions.NotConnected("Bot")
+            self.voice.stop()
+        else:
+            await self.vote_skip(ctx)
 
 
     @commands.cooldown(1, 10, commands.BucketType.user)  # 0 == default = global
@@ -242,11 +243,9 @@ class MusicBot(commands.Cog):
         It sends an embed containing all the info about the current playing song.
         '''
         if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot").message())
-            return
+            raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            await ctx.send(exceptions.BotIsNotPlaying(self.voice.channel, ctx.author).message())
-            return
+            raise exceptions.BotIsNotPlaying(self.voice.channel, ctx.author)
         await self.send_np_embed(ctx)
 
 
@@ -257,8 +256,7 @@ class MusicBot(commands.Cog):
         It shows a list containing all the queries in the 'self.queue' list
         '''
         if len(self.queue) <= 0:
-            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author).message())
-            return
+            raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
 
 
@@ -281,11 +279,9 @@ class MusicBot(commands.Cog):
         It pauses the music in the voice channel.
         '''
         if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot").message())
-            return
+            raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            await ctx.send(exceptions.BotIsNotPlaying(ctx.author).message())
-            return
+            raise exceptions.BotIsNotPlaying(ctx.author)
         self.voice.pause()
         await ctx.send('Music paused.')
 
@@ -297,11 +293,9 @@ class MusicBot(commands.Cog):
         It resumes the music in the voice channel.
         '''
         if self.voice is None:
-            await ctx.send(exceptions.NotConnected("Bot").message())
-            return
+            raise exceptions.NotConnected("Bot")
         if self.voice.is_playing():
-            await ctx.send(exceptions.BotIsAlreadyPlaying(ctx.author).message())
-            return
+            raise exceptions.BotIsAlreadyPlaying(ctx.author)
         self.voice.resume()
         await ctx.send('Music resumed.')
 
@@ -316,12 +310,10 @@ class MusicBot(commands.Cog):
             await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}")
         else:
             if not str.isdigit(volume):
-                await ctx.send(exceptions.BadArgumentType(volume, type(volume), int, ctx.author).message())
-                return
+                raise exceptions.BadArgumentType(volume, type(volume), int, ctx.author)
             volume = int(volume)
             if volume < 0 or volume > 200:
-                await ctx.send(exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author).message())
-                return
+                raise exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author)
             self.volume_value = float(volume / 100)
             await ctx.send(f"Volume is now set to {volume}%")
             if self.voice is not None:
@@ -353,25 +345,21 @@ class MusicBot(commands.Cog):
         await ctx.send("Queue erased!")
 
 
-    @commands.command(name="rm", help="It removes a song from the queue by index.",
-                    aliases=["remove", "eliminate", "delete"])
-    async def rm(self, ctx, index:int):
+    @commands.command(name="remove", help="It removes a song from the queue by index.",
+                    aliases=["rm", "eliminate", "delete"])
+    async def remove(self, ctx, index:int):
         '''
         It removes a query from the self.queue list by index.
         '''
         if len(index) == 0:
-            await ctx.send(exceptions.MissingRequiredArgument("song index", ctx.author).message())
-            return
+            raise exceptions.MissingRequiredArgument("song index", ctx.author)
         if not str.isdigit(index):
-            await ctx.send(exceptions.BadArgumentType(index, type(index), int, ctx.author).message())
-            return
+            raise exceptions.BadArgumentType(index, type(index), int, ctx.author)
         index = int(index) - 1
         if len(self.queue) <= 0:
-            await ctx.send(exceptions.QueueIsEmpty(self.queue, ctx.author).message())
-            return
+            raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         if len(self.queue) < index or index <= 0:
-            await ctx.send(exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author).message())
-            return
+            raise exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author)
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
 
@@ -388,11 +376,9 @@ class MusicBot(commands.Cog):
             return
         name = name.strip()
         if name in self.playlists:
-            await ctx.send(exceptions.BadArgument(name, "The playlist already exists.").message())
-            return
+            raise exceptions.BadArgument(name, "The playlist already exists.")
         if len(self.played_songs) == 0 or len(self.queue) == 0:
-            await ctx.send(exceptions.NoSongsToBeSaved(ctx.author).message())
-            return
+            raise exceptions.NoSongsToBeSaved(ctx.author)
 
         with open(f"playlists/{name}.ini", "w") as file:
             for song in (self.played_songs + self.queue):
@@ -421,28 +407,7 @@ class MusicBot(commands.Cog):
         It sums up user votes
         when votes are more than 50% than members it skips song
         '''
-        author = ctx.author
-        if self.voice is None:
-            await ctx.send(exceptions.NotConnected(ctx.author).message())
-            return
-        members_count = len(self.voice.channel.members) - 1
-
-        if author.id not in self.votes:
-            self.votes.append(author.id)
-            await ctx.send(f'{author.name}, your vote has been recorded. (current votes: {len(self.votes)}/{members_count})')
-        else:
-            await ctx.send(f'{author.name}, you have already voted.')
-            return
-
-        if len(self.votes) > (members_count / 2):
-            if self.voice is None:
-                await ctx.send(exceptions.NotConnected("Bot").message())
-                return
-            await ctx.send(f"Votes are {len(self.votes)}/{members_count}. Skipping to the next song.")
-            self.votes = []
-            self.voice.stop()
-
-
+        await self.vote_skip(ctx)
 
 
 
@@ -452,7 +417,7 @@ class MusicBot(commands.Cog):
         with youtube_dl.YoutubeDL(self.YTDL_OPTIONS) as ytdl:
             video = ytdl.extract_info("ytsearch:%s" % self.queue[0], download=False)['entries'][0]
             if 'audio only' not in video['formats'][0]['format']:
-                return False
+                raise exceptions.BadArgument(video['formats'][0]['format'], "The video does not have an audio file or is a playlist", None)
             self.song_info = {'source': video['formats'][0]['url'],
                             'title': video['title'],
                             'duration': video['duration'],
@@ -461,7 +426,7 @@ class MusicBot(commands.Cog):
                             'views': video['view_count'],
                             'url': video['webpage_url'] }
         if self.song_info['duration'] > 60 * 60 * 2:
-            return False
+            raise exceptions.BadArgument(self.song_info['duration'], "The video is longer than 2 hours", None)
         if self.bool_loop is False:
             self.played_songs.append(self.queue.pop(0)) # moves current song from queue to old songs
         self.voice.play(discord.FFmpegPCMAudio(self.song_info['source'], **self.FFMPEG_OPTIONS), after = self.after)
@@ -513,8 +478,10 @@ class MusicBot(commands.Cog):
 
     async def append_error_log(self, error, author):
         with open("error_log.txt", "a") as file:
-            text = f"{author.name} - {time} | {str(error)}\n"
             time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            if author is None:
+                text = f"Unknown - {time} | {str(error)}\n"
+            text = f"{author.name} - {time} | {str(error)}\n"
             file.write(text)
         print(f"EXCEPTION: '{text}'")
 
@@ -526,6 +493,27 @@ class MusicBot(commands.Cog):
             self.playlists.append(playlist.removesuffix(".ini"))
 
 
+    async def vote_skip(self, ctx):
+        author = ctx.author
+        if self.voice is None:
+            raise exceptions.NotConnected(ctx.author)
+        members_count = len(self.voice.channel.members) - 1
+
+        if author.id not in self.votes:
+            self.votes.append(author.id)
+            await ctx.send(f'{author.name}, your vote has been recorded. (current votes: {len(self.votes)}/{members_count})')
+        else:
+            await ctx.send(f'{author.name}, you have already voted.')
+            return
+
+        if len(self.votes) > (members_count / 2):
+            if self.voice is None:
+                raise exceptions.NotConnected("Bot")
+            await ctx.send(f"Votes are {len(self.votes)}/{members_count}. Skipping to the next song.")
+            self.votes = []
+            self.voice.stop()
+
+
 
 class CustomHelpCommand(commands.HelpCommand):
     def __init__(self):
@@ -534,8 +522,9 @@ class CustomHelpCommand(commands.HelpCommand):
 
     # help command
     async def send_bot_help(self, mapping):
+        import main
         embed = discord.Embed(title="Help command")
-        embed.set_footer(text=f"HINT: Type {MusicBot().prefix}help <command name> to get more information about the single command.")
+        embed.set_footer(text=f"HINT: Type {main.prefix}help <command name> to get more information about the single command.")
         for cog in mapping:
             names = [command.name for command in mapping[cog]]
             helps = [command.help for command in mapping[cog]]
