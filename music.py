@@ -26,21 +26,22 @@ To install all the dependencies:
 from discord.ext import commands
 from discord.ext import tasks
 import datetime, time
+import lyricsgenius
 import configparser
 import youtube_dl
 import exceptions
 import asyncio
 import discord
 import os, sys
-import inspect
 
 
 
 class MusicBot(commands.Cog):
-    def __init__(self, bot, prefix, volume, bot_name):
+    def __init__(self, bot, prefix, volume, lyrics, bot_name):
         self.bot = bot # instance of commands.Bot class
         self.bot_name = bot_name
         self.prefix = prefix # bot prefix [default=!]
+        self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.bool_loop = False # bool if bot has to play the same song 
@@ -131,8 +132,11 @@ class MusicBot(commands.Cog):
             - ChannelNotFound
             - MissingPermissions
         '''
-        # TODO
-        print(error)
+        if isinstance(error, commands.CommandError):
+            # if hasattr, it's a custom exception
+            if hasattr(error, "message"):
+                await ctx.send(error.message())
+                return
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(f"This is not an available command.\nType {self.prefix}help to get a list of the available commands.")
         elif isinstance(error, commands.CheckFailure):
@@ -153,7 +157,8 @@ class MusicBot(commands.Cog):
             await self.append_error_log(error, ctx.author)
             await ctx.send("An unexpected error occured. If it persists please contact the owner of the bot:\n" +
                             "**Discord:** Liuk Del Valun #3966\n" + 
-                            "**Email:** ldvcoding@gmail.com")
+                            "**Email:** ldvcoding@gmail.com\n"+
+                            "If you do so, you'll help the owner to fix the bugs. Thank you.")
 
 
 
@@ -192,6 +197,8 @@ class MusicBot(commands.Cog):
     async def album(self, ctx, *name:str):
         if len(name) == 0:
             raise exceptions.MissingRequiredArgument("playlist name", ctx.author)
+        if ctx.author.voice is None:
+            raise exceptions.NotConnected(ctx.author)
         name = "_".join(name)
         name = name.strip()
         name = name.replace(' ', '_')
@@ -217,7 +224,11 @@ class MusicBot(commands.Cog):
         It disconnects the bot from the voice channel.\n
         Aka it runs the self.disconnect() function.
         '''
+        if self.voice is None:
+            return
+        await ctx.send(f"Disconnecting from '{self.voice.channel.name}'")
         await self.disconnect()
+        
 
 
     @commands.command(name="skip", help="It stops the current playing song to play the next song.",
@@ -302,13 +313,14 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="volume", help="It sets or gets the music volume.",
                     aliases=["vol", "loudness", "sound"])
-    async def volume(self, ctx, volume:int):
+    async def volume(self, ctx, *volume:int):
         '''
         It sets or gets the music volume.
         '''
         if len(volume) == 0:
             await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}")
         else:
+            volume = str(volume[0])
             if not str.isdigit(volume):
                 raise exceptions.BadArgumentType(volume, type(volume), int, ctx.author)
             volume = int(volume)
@@ -400,7 +412,7 @@ class MusicBot(commands.Cog):
             await ctx.send("Loop is now disabled.")
 
 
-    @commands.command(name="vote", help="It counts how many users voted to skip the song (more than 50% votes needed)",
+    @commands.command(name="vote", help="It adds up a vote to skip the song (more than 50% votes needed)",
                     aliases=["poll"])
     async def vote(self, ctx):
         '''
@@ -408,6 +420,20 @@ class MusicBot(commands.Cog):
         when votes are more than 50% than members it skips song
         '''
         await self.vote_skip(ctx)
+
+
+    @commands.command(name="lyrics", help="Not available yet. Coming soon!",
+                    aliases=["text", "speech", "karaoke"])
+    async def lyrics(self, ctx):
+        # await ctx.send(f"This function is not available yet. ☹️")
+        # return
+
+        genius = lyricsgenius.Genius(access_token=self.lyrics_token)
+
+
+
+
+
 
 
 
@@ -523,14 +549,15 @@ class CustomHelpCommand(commands.HelpCommand):
     # help command
     async def send_bot_help(self, mapping):
         import main
+        prefix = main.read_setting("prefix")
         embed = discord.Embed(title="Help command")
-        embed.set_footer(text=f"HINT: Type {main.prefix}help <command name> to get more information about the single command.")
+        embed.set_footer(text=f"HINT: Type '{prefix}help <command name>' to get more information about the single command.")
         for cog in mapping:
-            names = [command.name for command in mapping[cog]]
+            names = [command.name.capitalize() for command in mapping[cog]]
             helps = [command.help for command in mapping[cog]]
             dictionary = dict(zip(names, helps))
             for key in sorted(dictionary):
-                embed.add_field(name=key, value=dictionary[key])
+                embed.add_field(name=f"__{key}__", value=dictionary[key])
         await self.get_destination().send(embed=embed)
 
 

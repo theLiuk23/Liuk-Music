@@ -64,3 +64,9 @@ Liuk Del Valun - 31/08/2022 19:18:51 | ('query', <Member id=722922053384142879 n
 Liuk Del Valun - 31/08/2022 19:19:21 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=0 chunked=True member_count=2>>)
 Liuk Del Valun - 31/08/2022 19:19:33 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=0 chunked=True member_count=2>>)
 Liuk Del Valun - 31/08/2022 19:31:20 | ('query', <Member id=722922053384142879 name='Liuk Del Valun' discriminator='3966' bot=False nick=None guild=<Guild id=938399497795538974 name='Cazzi miei' shard_id=0 chunked=True member_count=2>>)
+Liuk Del Valun - 01/09/2022 16:36:40 | Command raised an exception: AttributeError: 'NoneType' object has no attribute 'channel'
+Liuk Del Valun - 01/09/2022 16:37:33 | Command raised an exception: AttributeError: 'NoneType' object has no attribute 'channel'
+Liuk Del Valun - 01/09/2022 16:39:11 | Command raised an exception: AttributeError: 'NoneType' object has no attribute 'channel'
+Liuk Del Valun - 01/09/2022 16:44:22 | Command raised an exception: TypeError: object of type 'int' has no len()
+Liuk Del Valun - 01/09/2022 16:45:05 | Command raised an exception: TypeError: descriptor 'isdigit' for 'str' objects doesn't apply to a 'tuple' object
+Liuk Del Valun - 01/09/2022 17:00:28 | Command raised an exception: TypeError: ord() expected a character, but string of length 2 found
