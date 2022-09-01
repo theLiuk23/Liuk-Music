@@ -425,8 +425,8 @@ class MusicBot(commands.Cog):
     @commands.command(name="lyrics", help="Not available yet. Coming soon!",
                     aliases=["text", "speech", "karaoke"])
     async def lyrics(self, ctx):
-        # await ctx.send(f"This function is not available yet. ☹️")
-        # return
+        await ctx.send(f"This function is not available yet. ☹️")
+        return
 
         genius = lyricsgenius.Genius(access_token=self.lyrics_token)
 
