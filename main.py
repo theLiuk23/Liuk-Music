@@ -25,6 +25,7 @@ config = configparser.RawConfigParser()
 token = None
 prefix = None
 volume = None
+lyrics = None
 bot_name = None
 
 
@@ -43,7 +44,7 @@ def install_ffmpeg():
 
 
 async def initiate_bot():
-    await bot.add_cog(music.MusicBot(bot, prefix, float(volume), bot_name))
+    await bot.add_cog(music.MusicBot(bot, prefix, float(volume), lyrics, bot_name))
     await bot.start(token)
 
 
@@ -52,6 +53,7 @@ if __name__ == "__main__":
     token = read_setting("token")
     prefix = read_setting("prefix")
     volume = read_setting("volume")
+    lyrics = read_setting("lyrics")
     bot_name = read_setting("bot_name")
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
     bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), activity=activity, help_command=music.CustomHelpCommand())

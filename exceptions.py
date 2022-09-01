@@ -61,6 +61,7 @@ class QueueIsEmpty(commands.CommandError):
     
 class MissingRequiredArgument(commands.CommandError):
     def __init__(self, parameter:str, author:discord.Member=None):
+        self.class_name = self
         self.parameter = parameter
         self.author = author
 
