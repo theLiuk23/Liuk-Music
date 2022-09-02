@@ -33,12 +33,12 @@ class TooLongVideo(commands.CommandError):
 
 
 class BotIsNotPlaying(commands.CommandError):
-    def __init__(self, channel:discord.VoiceChannel, author:discord.Member=None):
-        self.channel = channel
+    def __init__(self, voice:discord.VoiceChannel, author:discord.Member=None):
+        self.voice = voice
         self.author = author
         
     def message(self):
-        return f"The bot is connected to {self.channel.name} but is playing no music."
+        return f"The bot is connected to {self.voice.channel.name} but is playing no music."
 
 
 class BotIsAlreadyPlaying(commands.CommandError):

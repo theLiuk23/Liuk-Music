@@ -23,6 +23,7 @@ To install all the dependencies:
     run the following command: $ pip install -r requirements.txt
 '''
 
+
 from discord.ext import commands
 from discord.ext import tasks
 import datetime, time
@@ -33,6 +34,7 @@ import exceptions
 import asyncio
 import discord
 import os, sys
+import math
 
 
 
@@ -256,7 +258,7 @@ class MusicBot(commands.Cog):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            raise exceptions.BotIsNotPlaying(self.voice.channel, ctx.author)
+            raise exceptions.BotIsNotPlaying(self.voice, ctx.author)
         await self.send_np_embed(ctx)
 
 
@@ -292,7 +294,7 @@ class MusicBot(commands.Cog):
         if self.voice is None:
             raise exceptions.NotConnected("Bot")
         if not self.voice.is_playing():
-            raise exceptions.BotIsNotPlaying(ctx.author)
+            raise exceptions.BotIsNotPlaying(ctx.voice, ctx.author)
         self.voice.pause()
         await ctx.send('Music paused.')
 
@@ -424,12 +426,36 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="lyrics", help="Not available yet. Coming soon!",
                     aliases=["text", "speech", "karaoke"])
-    async def lyrics(self, ctx):
-        await ctx.send(f"This function is not available yet. ☹️")
-        return
+    async def lyrics(self, ctx, *title):
+        if self.voice is None:
+            raise exceptions.NotConnected("Bot")
+        if self.voice.is_playing() is False:
+            raise exceptions.BotIsNotPlaying(ctx.voice, ctx.author)
 
-        genius = lyricsgenius.Genius(access_token=self.lyrics_token)
+        if len(title) == 0:
+            title = self.song_info['title']
+            title = title.split("ft")[0]
+            title = title.split("official")[0]
+            title = title.split("explicit")[0]
+            title = title.strip("[]().,;:-_")
+        else:
+            title = " ".join(title)
 
+        genius = lyricsgenius.Genius(access_token=self.lyrics_token, verbose=False)
+        song = genius.search_song(title)
+
+        if song is None:
+            await ctx.send(f"I searched for '{title}', but I couldn't find any lyrics.\n" +
+                            f"Try to write {self.prefix}lyrics <custom title> to look for lyrics manually.")
+            return
+        
+        embed = discord.Embed(title="I found this song's lyrics. Is it correct?")
+        embed.add_field(name="Title", value=song.full_title)
+        embed.add_field(name="Author", value=song.artist)
+        embed.set_image(url=song.song_art_image_thumbnail_url)
+
+        message = await ctx.send(embed=embed)
+        await self.search_lyrics(ctx, message, song)
 
 
 
@@ -538,6 +564,31 @@ class MusicBot(commands.Cog):
             await ctx.send(f"Votes are {len(self.votes)}/{members_count}. Skipping to the next song.")
             self.votes = []
             self.voice.stop()
+
+
+    async def search_lyrics(self, ctx, message, song):
+        for emoji in ('👍', '👎'):
+            await message.add_reaction(emoji)
+
+        def check(reaction, user):
+            return str(reaction.emoji) == '👍' or str(reaction.emoji) == '👎'
+        try:
+            reaction = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            result = False
+        
+        if reaction[0].emoji == '👍': result = True
+        else: result = False
+
+        if result:
+            if len(song.lyrics) > 6000:
+                await ctx.send(f"Lyrics exceeds maximum size of 6000.\nHere's a link to open up a site with the entire lyrics: {song.url}")
+                return
+            embed = discord.Embed(title=f"Lyrics for: '{song.full_title}'")
+            for page in range(math.ceil(len(song.lyrics) / 1024)):
+                embed.add_field(name=f"Page{page+1}", value=song.lyrics[1023*page:page*1023 + 1023:])
+            await ctx.send(embed=embed)
+
 
 
 
