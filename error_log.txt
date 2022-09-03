@@ -85,3 +85,4 @@ Liuk Del Valun - 02/09/2022 19:44:09 | Command raised an exception: TypeError: s
 Liuk Del Valun - 02/09/2022 19:51:14 | Command raised an exception: TypeError: sequence item 0: expected str instance, Context found
 Liuk Del Valun - 02/09/2022 19:56:26 | Command raised an exception: ClientException: Already connected to a voice channel.
 Liuk Del Valun - 02/09/2022 19:56:35 | Command raised an exception: UnboundLocalError: local variable 'reaction' referenced before assignment
+Liuk Del Valun - 03/09/2022 17:46:25 | Command raised an exception: TypeError: descriptor 'isdigit' for 'str' objects doesn't apply to a 'tuple' object

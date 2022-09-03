@@ -68,11 +68,12 @@ class Commands:
 
 
     async def disconnect(self):
+        import music
         if self.voice is not None:
             if self.voice.is_connected():
                 await self.voice.disconnect()
-        self.check_music.stop()
-        self.check_members.stop()
+        music.MusicBot.check_music.cancel()
+        music.MusicBot.check_members.cancel()
         self.voice = None
         self.check1, self.check2 = 0, 0
         self.played_songs = []
@@ -120,8 +121,10 @@ class Commands:
 
     async def vote_skip(self, ctx):
         author = ctx.author
-        if self.voice is None:
+        if ctx.author.voice is None:
             raise exceptions.NotConnected(ctx.author)
+        if self.voice is None:
+            raise exceptions.NotConnected("Bot")
         members_count = len(self.voice.channel.members) - 1
 
         if author.id not in self.votes:
@@ -184,7 +187,8 @@ class Commands:
 
     async def album(self, ctx, *name):
         if len(name) == 0:
-            raise exceptions.MissingRequiredArgument("playlist name", ctx.author)
+            await ctx.send("Here's a list of the saved playlists:\n" + "\n".join("[{}] {}".format(i, pl) for i, pl in enumerate(self.playlists, start=1)))
+            return
         if ctx.author.voice is None:
             raise exceptions.NotConnected(ctx.author)
         name = "_".join(name)
@@ -240,6 +244,7 @@ class Commands:
         if self.voice is not None:
             await self.disconnect()
         await self.bot.close()
+        sys.exit(0)
 
 
     async def pause(self, ctx):
@@ -260,7 +265,7 @@ class Commands:
         await ctx.send('Music resumed.')
 
 
-    async def volume(self, ctx):
+    async def volume(self, ctx, *volume):
         if len(volume) == 0:
             await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}")
         else:
@@ -287,15 +292,15 @@ class Commands:
 
 
     async def remove(self, ctx, index):
-        if len(index) == 0:
+        if index is None:
             raise exceptions.MissingRequiredArgument("song index", ctx.author)
-        if not str.isdigit(index):
+        if not str.isdigit(str(index)):
             raise exceptions.BadArgumentType(index, type(index), int, ctx.author)
         index = int(index) - 1
         if len(self.queue) <= 0:
             raise exceptions.QueueIsEmpty(self.queue, ctx.author)
         if len(self.queue) < index or index <= 0:
-            raise exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1", ctx.author)
+            raise exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1 (out of the queue bounds)", ctx.author)
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
 

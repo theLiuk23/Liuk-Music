@@ -25,9 +25,6 @@ To install all the dependencies:
 
 from discord.ext import commands
 from discord.ext import tasks
-import lyricsgenius
-import configparser
-import exceptions
 import funcitons
 import datetime
 import discord
@@ -44,24 +41,7 @@ class MusicBot(commands.Cog):
         self.volume_value = volume # music volume (between 0.0 and 2.0)
         self.functions = funcitons.Commands(bot, prefix, volume, lyrics, bot_name)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
-        # self.bool_loop = False # bool if bot has to play the same song 
-        # self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
-        # self.song_info = None # dictionary containing the info of the current playing song
-        # self.votes = []
-        # self.played_songs = [] # list containing the titles of already played songs
-        # self.queue = [] # list containing the titles of the songs which are going to be played
-        # self.playlists = [] # list of all the saved playlists' names
-        # self.exceptions = [] # list containing the name of all the classes in "exceptions.py" file
-        # self.YTDL_OPTIONS = { # options for youtube_dl library
-        #     'format': 'bestaudio',
-        #     'ignoreerrors':'True',
-        #     'noplaylist': 'True',
-        #     'nowarnings': 'True',
-        #     'quiet': 'True',
-        #     'cookiefile': "~/.local/bin/youtube.com_cookies.txt"}
-        # self.FFMPEG_OPTIONS = { # options for FFMPEG library
-        #     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-        #     'options': '-vn -hide_banner -loglevel error' }
+        self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
         
 
     @tasks.loop(seconds=5)
@@ -71,14 +51,15 @@ class MusicBot(commands.Cog):
         If the bot is alone in the voice channel, the variable self.check1 will increase by 1.
         After 3 times in a row, the bot will disconnect from the voice channel.
         '''
-        if self.voice is not None:
-            if self.check1 >= 3:
-                await self.disconnect()
-                return
-            if len(self.voice.channel.members) <= 1:
-                self.check1 += 1
-            else:
-                self.check1 = 0
+        if self.voice is None:
+            return
+        if self.check1 >= 3:
+            await self.disconnect()
+            return
+        if len(self.voice.channel.members) <= 1:
+            self.check1 += 1
+        else:
+            self.check1 = 0
                  
         
     @tasks.loop(seconds=5)
@@ -88,14 +69,15 @@ class MusicBot(commands.Cog):
         If the bot is not playing music anymore, the variable self.check2 will increase by 1.
         After 3 times in a row, the bot will disconnect from the voice channel.
         '''
-        if self.voice is not None:
-            if self.check2 >= 3:
-                await self.disconnect()
-                return
-            if not self.voice.is_playing() and not self.voice.is_paused():
-                self.check2 += 1
-            else:
-                self.check2 = 0
+        if self.voice is None:
+            return
+        if self.check2 >= 3:
+            await self.disconnect()
+            return
+        if not self.voice.is_playing() and not self.voice.is_paused():
+            self.check2 += 1
+        else:
+            self.check2 = 0
 
 
 
@@ -112,7 +94,7 @@ class MusicBot(commands.Cog):
             self.check_music.start()
         if not self.check_members.is_running():
             self.check_members.start()
-        # await self.load_playlists()
+        await self.functions.load_playlists()
         print("-"*52)
         print(f'Bot "{self.bot_name}" is now ONLINE -', datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
@@ -124,6 +106,7 @@ class MusicBot(commands.Cog):
         Listener triggered when a discord exception has raised.
         If there is a unhandled exception, it sends an "about me" message and saves the error in the "error_log.txt" file
         Handled exceptions:
+            - Custom Exceptions (see exceptions.py script)
             - CommandNotFound
             - CheckFailure
             - CheckAnyFailure
@@ -154,7 +137,7 @@ class MusicBot(commands.Cog):
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send("You don't have the required permissions to run this command: \n{0}".format('\n'.join(error.missing_perms)))
         else:
-            await self.append_error_log(error, ctx.author)
+            await self.functions.append_error_log(error, ctx.author)
             await ctx.send("An unexpected error occured. If it persists please contact the owner of the bot:\n" +
                             "**Discord:** Liuk Del Valun #3966\n" + 
                             "**Email:** ldvcoding@gmail.com\n"+
@@ -280,7 +263,7 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="remove", help="It removes a song from the queue by index.",
                     aliases=["rm", "eliminate", "delete"])
-    async def remove(self, ctx, index:int):
+    async def remove(self, ctx, index = None):
         '''
         It removes a query from the self.queue list by index.
         '''
@@ -330,7 +313,7 @@ class CustomHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
 
-
+    # TODO: better formatting
     # help command
     async def send_bot_help(self, mapping):
         import main
