@@ -312,8 +312,8 @@ class MusicBot(commands.Cog):
 class CustomHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
-
-    # TODO: better formatting
+        
+        
     # help command
     async def send_bot_help(self, mapping):
         import main
@@ -321,9 +321,10 @@ class CustomHelpCommand(commands.HelpCommand):
         embed = discord.Embed(title="Help command")
         embed.set_footer(text=f"HINT: Type '{prefix}help <command name>' to get more information about the single command.")
         for cog in mapping:
-            names = [command.name.capitalize() for command in mapping[cog]]
-            helps = [command.help for command in mapping[cog]]
-            dictionary = dict(zip(names, helps))
+            ''' creating dict containing:
+                    keys = commands' names
+                    values = commands' help '''
+            dictionary = dict(zip([command.name.capitalize() for command in mapping[cog]], [command.help for command in mapping[cog]]))
             for key in sorted(dictionary):
                 embed.add_field(name=f"__{key}__", value=dictionary[key])
         await self.get_destination().send(embed=embed)
