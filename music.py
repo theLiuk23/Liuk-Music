@@ -42,6 +42,11 @@ class MusicBot(commands.Cog):
         self.functions = funcitons.Commands(bot, prefix, volume, lyrics, bot_name)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
+
+
+    def cog_unload(self):
+        self.check_members.cancel()
+        self.check_music.cancel()
         
 
     @tasks.loop(seconds=5)
@@ -242,16 +247,6 @@ class MusicBot(commands.Cog):
         await self.functions.volume(ctx, *volume)
 
 
-    @commands.is_owner()
-    @commands.command(name="reload", help="It makes the bot go offline and online again (You must be the owner).")
-    async def reload(self, ctx):
-        '''
-        It makes the bot go offline and online again. (see self.reload_bot() function)
-        You must be the owner.
-        '''
-        await self.functions.reload_bot(ctx)
-
-
     @commands.command(name="clear", help="It clears out the queue",
                     aliases=["erase", "wipe"])
     async def clear(self, ctx):
@@ -305,6 +300,17 @@ class MusicBot(commands.Cog):
         It searches for the lyrics of the currently playing song
         '''
         await self.functions.lyrics(ctx, *title)
+
+
+    @commands.command(name="prefix", help="It changes the bot prefix",
+                    aliases=["pref", "char"])
+    async def prefix(self, ctx, new = None):
+        '''
+        It changes the bot prefix
+        '''
+        await self.functions.change_prefix(ctx, new)
+
+
 
 
 

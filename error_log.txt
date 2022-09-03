@@ -86,3 +86,8 @@ Liuk Del Valun - 02/09/2022 19:51:14 | Command raised an exception: TypeError: s
 Liuk Del Valun - 02/09/2022 19:56:26 | Command raised an exception: ClientException: Already connected to a voice channel.
 Liuk Del Valun - 02/09/2022 19:56:35 | Command raised an exception: UnboundLocalError: local variable 'reaction' referenced before assignment
 Liuk Del Valun - 03/09/2022 17:46:25 | Command raised an exception: TypeError: descriptor 'isdigit' for 'str' objects doesn't apply to a 'tuple' object
+Liuk Del Valun - 03/09/2022 18:09:22 | Command raised an exception: TypeError: MusicBot.cog_unload() missing 1 required positional argument: 'self'
+Liuk Del Valun - 03/09/2022 18:16:34 | Command raised an exception: TypeError: 'str' object is not callable
+Liuk Del Valun - 03/09/2022 18:17:11 | Command raised an exception: TypeError: write() argument must be str, not RawConfigParser
+Liuk Del Valun - 03/09/2022 18:17:40 | Command raised an exception: TypeError: write() argument must be str, not _io.TextIOWrapper
+Liuk Del Valun - 03/09/2022 18:17:57 | Command raised an exception: TypeError: write() argument must be str, not _io.TextIOWrapper

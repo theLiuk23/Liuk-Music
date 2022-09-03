@@ -6,6 +6,7 @@ import configparser
 import datetime, time
 import lyricsgenius
 import sys, os
+import music
 import math
 
 
@@ -23,7 +24,6 @@ class Commands:
         self.played_songs = [] # list containing the titles of already played songs
         self.queue = [] # list containing the titles of the songs which are going to be played
         self.playlists = [] # list of all the saved playlists' names
-        self.exceptions = [] # list containing the name of all the classes in "exceptions.py" file
         self.YTDL_OPTIONS = { # options for youtube_dl library
             'format': 'bestaudio',
             'ignoreerrors':'True',
@@ -68,27 +68,21 @@ class Commands:
 
 
     async def disconnect(self):
-        import music
-        if self.voice is not None:
-            if self.voice.is_connected():
-                await self.voice.disconnect()
-        music.MusicBot.check_music.cancel()
-        music.MusicBot.check_members.cancel()
+        if self.voice is None or not self.voice.is_connected():
+            return
+        await self.voice.disconnect()
         self.voice = None
         self.check1, self.check2 = 0, 0
         self.played_songs = []
+        self.song_info = None
         self.queue = []
+        self.votes = []
+        self.bool_loop = False
 
 
     async def connect(self, ctx):
         self.voice = await ctx.author.voice.channel.connect()
         await ctx.guild.change_voice_state(channel=self.voice.channel, self_mute=False, self_deaf=True)
-
-    
-    async def reload_bot(self, ctx):
-        await ctx.send("The bot is now reloading.")
-        await self.bot.close()
-        os.execv(sys.executable, ['python3'] + ['main.py'])
 
 
     async def send_np_embed(self, ctx):
@@ -336,7 +330,6 @@ class Commands:
             raise exceptions.NotConnected("Bot")
         if self.voice.is_playing() is False:
             raise exceptions.BotIsNotPlaying(ctx.voice, ctx.author)
-
         if len(title) == 0:
             title = self.song_info['title']
             title = title.split("ft")[0]
@@ -348,7 +341,6 @@ class Commands:
 
         genius = lyricsgenius.Genius(access_token=self.lyrics_token, verbose=False)
         song = genius.search_song(title)
-
         if song is None:
             await ctx.send(f"I searched for '{title}', but I couldn't find any lyrics.\n" +
                             f"Try to write {self.prefix}lyrics <custom title> to look for lyrics manually.")
@@ -358,6 +350,15 @@ class Commands:
         embed.add_field(name="Title", value=song.full_title)
         embed.add_field(name="Author", value=song.artist)
         embed.set_image(url=song.song_art_image_thumbnail_url)
-
         message = await ctx.send(embed=embed)
         await self.search_lyrics(ctx, message, song)
+
+
+    async def change_prefix(self, ctx, new):
+        config = configparser.RawConfigParser()
+        config.read("settings.ini")
+        with open("settings.ini", "w") as file:
+            config.set("variables", "prefix", new)
+            config.write(file)
+        self.bot.command_prefix = new
+        await ctx.send(f"Prefix successfully changed to '{new}'")
