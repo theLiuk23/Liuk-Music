@@ -17,7 +17,7 @@ import subprocess
 import asyncio
 import discord
 import music
-import os
+import sys, os
 
 
 config = configparser.RawConfigParser()
@@ -70,3 +70,4 @@ if __name__ == "__main__":
     finally:
         # stop and close loop
         loop.stop()
+        sys.exit(0)

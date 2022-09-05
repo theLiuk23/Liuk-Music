@@ -33,13 +33,13 @@ import discord
 
 
 class MusicBot(commands.Cog):
-    def __init__(self, bot, prefix, volume, lyrics, bot_name):
+    def __init__(self, bot, bot_prefix, volume, lyrics, bot_name):
         self.bot = bot # instance of commands.Bot class
         self.bot_name = bot_name
-        self.prefix = prefix # bot prefix [default=!]
+        self.bot_prefix = bot_prefix # bot bot_prefix [default=!]
         self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
-        self.functions = funcitons.Commands(bot, prefix, volume, lyrics, bot_name)
+        self.functions = funcitons.Commands(bot, bot_prefix, volume, lyrics, bot_name)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
 
@@ -126,7 +126,7 @@ class MusicBot(commands.Cog):
                 await ctx.send(error.message())
                 return
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send(f"This is not an available command.\nType {self.prefix}help to get a list of the available commands.")
+            await ctx.send(f"This is not an available command.\nType {self.bot_prefix}help to get a list of the available commands.")
         elif isinstance(error, commands.CheckFailure):
             await ctx.send("Check failure error.")
         elif isinstance(error, commands.CheckAnyFailure):
@@ -302,11 +302,11 @@ class MusicBot(commands.Cog):
         await self.functions.lyrics(ctx, *title)
 
 
-    @commands.command(name="prefix", help="It changes the bot prefix",
+    @commands.command(name="prefix", help="It changes the bot bot_prefix",
                     aliases=["pref", "char"])
     async def prefix(self, ctx, new = None):
         '''
-        It changes the bot prefix
+        It changes the bot bot_prefix
         '''
         await self.functions.change_prefix(ctx, new)
 
@@ -323,9 +323,9 @@ class CustomHelpCommand(commands.HelpCommand):
     # help command
     async def send_bot_help(self, mapping):
         import main
-        prefix = main.read_setting("prefix")
+        bot_prefix = main.read_setting("prefix")
         embed = discord.Embed(title="Help command")
-        embed.set_footer(text=f"HINT: Type '{prefix}help <command name>' to get more information about the single command.")
+        embed.set_footer(text=f"HINT: Type '{bot_prefix}help <command name>' to get more information about the single command.")
         for cog in mapping:
             ''' creating dict containing:
                     keys = commands' names

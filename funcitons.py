@@ -5,9 +5,9 @@ import asyncio
 import configparser
 import datetime, time
 import lyricsgenius
-import sys, os
-import music
 import math
+import os
+
 
 
 class Commands:
@@ -238,7 +238,8 @@ class Commands:
         if self.voice is not None:
             await self.disconnect()
         await self.bot.close()
-        sys.exit(0)
+        # stops the main loop (see main.py) so the python script can gracefully close
+        asyncio.get_running_loop().stop()
 
 
     async def pause(self, ctx):
@@ -355,6 +356,10 @@ class Commands:
 
 
     async def change_prefix(self, ctx, new):
+        if new is None:
+            raise exceptions.MissingRequiredArgument("new prefix", ctx.author)
+        if new == self.bot.command_prefix:
+            raise exceptions.BadArgument("new prefix", f"New prefix '{new}' and the old one are the same.", ctx.author)
         config = configparser.RawConfigParser()
         config.read("settings.ini")
         with open("settings.ini", "w") as file:
