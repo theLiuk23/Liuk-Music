@@ -17,7 +17,7 @@ import subprocess
 import asyncio
 import discord
 import music
-import os
+import sys, os
 
 
 config = configparser.RawConfigParser()
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     prefix = read_setting("prefix")
     volume = read_setting("volume")
     lyrics = read_setting("lyrics")
-    bot_name = read_setting("bot_name")
+    bot_name = read_setting("name")
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
     bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), activity=activity, help_command=music.CustomHelpCommand())
     
@@ -70,3 +70,4 @@ if __name__ == "__main__":
     finally:
         # stop and close loop
         loop.stop()
+        sys.exit(0)

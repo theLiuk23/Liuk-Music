@@ -70,3 +70,25 @@ Liuk Del Valun - 01/09/2022 16:39:11 | Command raised an exception: AttributeErr
 Liuk Del Valun - 01/09/2022 16:44:22 | Command raised an exception: TypeError: object of type 'int' has no len()
 Liuk Del Valun - 01/09/2022 16:45:05 | Command raised an exception: TypeError: descriptor 'isdigit' for 'str' objects doesn't apply to a 'tuple' object
 Liuk Del Valun - 01/09/2022 17:00:28 | Command raised an exception: TypeError: ord() expected a character, but string of length 2 found
+Liuk Del Valun - 01/09/2022 17:19:41 | Command raised an exception: IndexError: list index out of range
+Liuk Del Valun - 01/09/2022 17:26:34 | Command raised an exception: TypeError: Embed.set_image() takes 1 positional argument but 2 were given
+Liuk Del Valun - 02/09/2022 18:36:29 | Command raised an exception: TypeError: MusicBot.lyrics.<locals>.check() takes 1 positional argument but 2 were given
+Liuk Del Valun - 02/09/2022 18:45:58 | Command raised an exception: TypeError: 'int' object is not iterable
+Liuk Del Valun - 02/09/2022 18:53:48 | Command raised an exception: AttributeError: 'Reaction' object has no attribute '__contains__'
+Liuk Del Valun - 02/09/2022 18:54:47 | Command raised an exception: AttributeError: 'Message' object has no attribute '__contains__'
+Liuk Del Valun - 02/09/2022 18:56:12 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In embeds.0.fields.0.value: Must be 1024 or fewer in length.
+Liuk Del Valun - 02/09/2022 19:01:09 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In embeds: Embed size exceeds maximum size of 6000
+Liuk Del Valun - 02/09/2022 19:43:39 | Command raised an exception: TypeError: sequence item 0: expected str instance, Context found
+Liuk Del Valun - 02/09/2022 19:44:09 | Command raised an exception: TypeError: sequence item 0: expected str instance, Context found
+Liuk Del Valun - 02/09/2022 19:51:14 | Command raised an exception: TypeError: sequence item 0: expected str instance, Context found
+Liuk Del Valun - 02/09/2022 19:56:26 | Command raised an exception: ClientException: Already connected to a voice channel.
+Liuk Del Valun - 02/09/2022 19:56:35 | Command raised an exception: UnboundLocalError: local variable 'reaction' referenced before assignment
+Liuk Del Valun - 03/09/2022 17:46:25 | Command raised an exception: TypeError: descriptor 'isdigit' for 'str' objects doesn't apply to a 'tuple' object
+Liuk Del Valun - 03/09/2022 18:09:22 | Command raised an exception: TypeError: MusicBot.cog_unload() missing 1 required positional argument: 'self'
+Liuk Del Valun - 03/09/2022 18:16:34 | Command raised an exception: TypeError: 'str' object is not callable
+Liuk Del Valun - 03/09/2022 18:17:11 | Command raised an exception: TypeError: write() argument must be str, not RawConfigParser
+Liuk Del Valun - 03/09/2022 18:17:40 | Command raised an exception: TypeError: write() argument must be str, not _io.TextIOWrapper
+Liuk Del Valun - 03/09/2022 18:17:57 | Command raised an exception: TypeError: write() argument must be str, not _io.TextIOWrapper
+Liuk Del Valun - 03/09/2022 18:33:44 | Command raised an exception: AttributeError: 'Bot' object has no attribute 'logout'
