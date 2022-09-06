@@ -181,7 +181,6 @@ class MusicBot(commands.Cog):
         await self.functions.stop(ctx)
         
 
-
     @commands.command(name="skip", help="It stops the current playing song to play the next song.",
                     aliases=["next", "incoming"])
     async def skip(self, ctx):
@@ -192,7 +191,7 @@ class MusicBot(commands.Cog):
         await self.functions.skip(ctx)
 
 
-    @commands.cooldown(1, 10, commands.BucketType.user)  # 0 == default = global
+    @commands.cooldown(1, 5, commands.BucketType.user)  # 0 == default = global
     @commands.command(name="nowplaying", help="It shows some information about the current playing song.",
                     aliases=["np", "info"])
     async def nowplaying(self, ctx):

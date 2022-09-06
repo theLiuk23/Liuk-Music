@@ -26,10 +26,10 @@ class Commands:
         self.playlists = [] # list of all the saved playlists' names
         self.YTDL_OPTIONS = { # options for youtube_dl library
             'format': 'bestaudio',
-            'ignoreerrors':'True',
-            'noplaylist': 'True',
-            'nowarnings': 'True',
-            'quiet': 'True',
+            'ignoreerrors': True,
+            'noplaylist': True,
+            'nowarnings': True,
+            'quiet': True,
             'cookiefile': "~/.local/bin/youtube.com_cookies.txt"}
         self.FFMPEG_OPTIONS = { # options for FFMPEG library
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -60,6 +60,7 @@ class Commands:
     
     def after(self, error):
         coro = self.play_music()
+        self.votes = []
         fut = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
         try:
             fut.result()
