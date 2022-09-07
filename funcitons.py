@@ -263,7 +263,7 @@ class Commands:
 
     async def volume(self, ctx, *volume):
         if len(volume) == 0:
-            await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}")
+            await ctx.send(f"Volume is now set to {int(self.volume_value * 100)}/200")
         else:
             volume = str(volume[0])
             if not str.isdigit(volume):
@@ -272,7 +272,7 @@ class Commands:
             if volume < 0 or volume > 200:
                 raise exceptions.BadArgument(str(volume), "Greater than 200 or lower than 0", ctx.author)
             self.volume_value = float(volume / 100)
-            await ctx.send(f"Volume is now set to {volume}%")
+            await ctx.send(f"Volume is now set to {volume}/200")
             if self.voice is not None:
                 self.voice.source.volume = float(volume / 100)
             config = configparser.RawConfigParser()
@@ -315,6 +315,8 @@ class Commands:
         with open(f"playlists/{name}.ini", "w") as file:
             for song in (self.played_songs + self.queue):
                 file.write(f"{song}\n")
+
+        await ctx.send(f"Playlist '{name}' saved correctly.")
 
         await self.load_playlists()
 
