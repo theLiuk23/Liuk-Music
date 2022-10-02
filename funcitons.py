@@ -49,7 +49,8 @@ class Commands:
                             'channel': video['channel'],
                             'thumbnails': video['thumbnails'],
                             'views': video['view_count'],
-                            'url': video['webpage_url'] }
+                            'url': video['webpage_url'],
+                            'description': video['description']}
         if self.song_info['duration'] > 60 * 60 * 2:
             raise exceptions.BadArgument(self.song_info['duration'], "The video is longer than 2 hours", None)
         if self.bool_loop is False:
@@ -91,6 +92,7 @@ class Commands:
         embed.set_image(url=self.song_info['thumbnails'][-1]['url'])
         embed.add_field(name="Title", value=self.song_info['title'], inline = True)
         embed.add_field(name="Channel", value=self.song_info['channel'], inline = False)
+        embed.add_field(name="Description", value=self.song_info['description'][:200], inline=False) # first 200 characters of description
         embed.add_field(name="Views", value=f"{self.song_info['views']:,}", inline = True)
         embed.add_field(name="Duration", value=time.strftime('%H:%M:%S', time.gmtime(self.song_info['duration'])), inline = True)
         embed.add_field(name="Link", value=f"[YouTube]({self.song_info['url']})")
