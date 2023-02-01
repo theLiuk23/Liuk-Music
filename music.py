@@ -25,7 +25,7 @@ To install all the dependencies:
 
 from discord.ext import commands
 from discord.ext import tasks
-import funcitons
+import my_commands
 import datetime
 import discord
 
@@ -39,7 +39,7 @@ class MusicBot(commands.Cog):
         self.bot_prefix = bot_prefix # bot bot_prefix [default=!]
         self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
-        self.functions = funcitons.Commands(bot, bot_prefix, volume, lyrics, bot_name)
+        self.functions = my_commands.MyCommands(bot, bot_prefix, volume, lyrics, bot_name)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
 

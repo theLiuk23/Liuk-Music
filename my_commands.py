@@ -10,9 +10,9 @@ import os
 
 
 
-class Commands:
+class MyCommands:
     def __init__(self, bot, prefix, volume, lyrics, bot_name):
-        self.bot = bot # instance of commands.Bot class
+        self.bot = bot # instance of my_commands.Bot class
         self.prefix = prefix # bot prefix [default=!]
         self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
@@ -81,6 +81,7 @@ class Commands:
 
 
     async def connect(self, ctx):
+        if self.voice is not None: return
         self.voice = await ctx.author.voice.channel.connect()
         await ctx.guild.change_voice_state(channel=self.voice.channel, self_mute=False, self_deaf=True)
 

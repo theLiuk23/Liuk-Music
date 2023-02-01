@@ -21,7 +21,6 @@ import sys, os
 
 
 config = configparser.RawConfigParser()
-
 token = None
 prefix = None
 volume = None
