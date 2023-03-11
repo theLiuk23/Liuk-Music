@@ -1,5 +1,5 @@
 import discord
-import youtube_dl
+import yt_dlp as youtube_dl
 import exceptions
 import asyncio
 import configparser
@@ -33,23 +33,27 @@ class MyCommands:
             'cookiefile': "~/.local/bin/youtube.com_cookies.txt"}
         self.FFMPEG_OPTIONS = { # options for FFMPEG library
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-            'options': '-vn -hide_banner -loglevel error' }
+            #'options': '-vn -hide_banner -loglevel error'
+            }
 
 
     async def play_music(self):
         if len(self.queue) <= 0:
             await self.disconnect()
         with youtube_dl.YoutubeDL(self.YTDL_OPTIONS) as ytdl:
-            video = ytdl.extract_info("ytsearch:%s" % self.queue[0], download=False)['entries'][0]
-            if 'audio only' not in video['formats'][0]['format']:
-                raise exceptions.BadArgument(video['formats'][0]['format'], "The video does not have an audio file or is a playlist", None)
-            self.song_info = {'source': video['formats'][0]['url'],
+            video = ytdl.extract_info(f"ytsearch:{self.queue[0]}", download=False)['entries'][0]
+            # if 'audio only' not in video['formats'][0]['format']:
+            #     raise exceptions.BadArgument(video['formats'][0]['format'], "The video does not have an audio file or is a playlist", None)
+            for format in video['formats'][3]:
+                print(format)
+            self.song_info = {'source': video['formats'][3]['url'],
                             'title': video['title'],
                             'duration': video['duration'],
                             'channel': video['channel'],
                             'thumbnails': video['thumbnails'],
                             'views': video['view_count'],
                             'url': video['webpage_url'] }
+            print(self.song_info['source'])
         if self.song_info['duration'] > 60 * 60 * 2:
             raise exceptions.BadArgument(self.song_info['duration'], "The video is longer than 2 hours", None)
         if self.bool_loop is False:

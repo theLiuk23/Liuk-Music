@@ -94,3 +94,14 @@ Liuk Del Valun - 03/09/2022 18:17:57 | Command raised an exception: TypeError: w
 Liuk Del Valun - 03/09/2022 18:33:44 | Command raised an exception: AttributeError: 'Bot' object has no attribute 'logout'
 Liuk Del Valun - 01/02/2023 17:16:39 | Command raised an exception: ClientException: Already connected to a voice channel.
 Liuk Del Valun - 01/02/2023 17:18:34 | Command raised an exception: AttributeError: 'NoneType' object has no attribute 'is_playing'
+Liuk Del Valun - 13/02/2023 22:10:48 | Command raised an exception: ClientException: Already playing audio.
+Liuk Del Valun - 11/03/2023 15:34:34 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:37:21 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:38:41 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:42:43 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:46:06 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:47:10 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:47:31 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:48:18 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:48:33 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
+Liuk Del Valun - 11/03/2023 15:51:35 | Command raised an exception: TypeError: 'NoneType' object is not subscriptable
