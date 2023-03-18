@@ -44,8 +44,6 @@ class MyCommands:
             video = ytdl.extract_info(f"ytsearch:{self.queue[0]}", download=False)['entries'][0]
             # if 'audio only' not in video['formats'][0]['format']:
             #     raise exceptions.BadArgument(video['formats'][0]['format'], "The video does not have an audio file or is a playlist", None)
-            for format in video['formats'][3]:
-                print(format)
             self.song_info = {'source': video['formats'][3]['url'],
                             'title': video['title'],
                             'duration': video['duration'],
@@ -53,7 +51,6 @@ class MyCommands:
                             'thumbnails': video['thumbnails'],
                             'views': video['view_count'],
                             'url': video['webpage_url'] }
-            print(self.song_info['source'])
         if self.song_info['duration'] > 60 * 60 * 2:
             raise exceptions.BadArgument(self.song_info['duration'], "The video is longer than 2 hours", None)
         if self.bool_loop is False:
