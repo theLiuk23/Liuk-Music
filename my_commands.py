@@ -33,13 +33,13 @@ import discord
 
 
 class MusicBot(commands.Cog):
-    def __init__(self, bot, bot_prefix, volume, lyrics, bot_name):
+    def __init__(self, bot, bot_prefix, volume, lyrics, bot_name, spotify_id, spotify_secret):
         self.bot = bot # instance of commands.Bot class
         self.bot_name = bot_name
         self.bot_prefix = bot_prefix # bot bot_prefix [default=!]
         self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
-        self.functions = my_functions.MyFunctions(bot, bot_prefix, volume, lyrics, bot_name)
+        self.functions = my_functions.MyFunctions(bot, bot_prefix, volume, lyrics, bot_name, spotify_id, spotify_secret)
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
 
@@ -308,6 +308,14 @@ class MusicBot(commands.Cog):
         '''
         await self.functions.change_prefix(ctx, new)
 
+
+    @commands.command(name="spotify", help="It links your spotify account with discord in order to import your spotify's playlists.",
+                      aliases=["spot", "link"])
+    async def spotify(self, ctx, user):
+        '''
+        It links your spotify account with discord in order to import your spotify's playlists.
+        '''
+        await self.functions.add_playlist_from_spotify(ctx, user)
 
 
 

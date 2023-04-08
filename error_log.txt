@@ -108,3 +108,18 @@ Liuk Del Valun - 11/03/2023 15:51:35 | Command raised an exception: TypeError: '
 Liuk Del Valun - 27/03/2023 20:23:57 | Command raised an exception: ClientException: Already connected to a voice channel.
 Liuk Del Valun - 27/03/2023 20:30:27 | Command raised an exception: ClientException: Already connected to a voice channel.
 Liuk Del Valun - 27/03/2023 20:52:31 | Command raised an exception: IndexError: list index out of range
+Liuk Del Valun - 07/04/2023 21:23:10 | Command raised an exception: SpotifyException: http status: 401, code:-1 - https://api.spotify.com/v1/users/ibljx0xr7u5m4u06y52wjgrip/starred:
+ Unauthorized., reason: None
+Liuk Del Valun - 08/04/2023 18:02:13 | user is a required argument that is missing.
+Liuk Del Valun - 08/04/2023 18:02:47 | Command raised an exception: SpotifyException: http status: 401, code:-1 - https://api.spotify.com/v1/users/Luca/starred:
+ Unauthorized., reason: None
+Liuk Del Valun - 08/04/2023 18:03:06 | Command raised an exception: SpotifyException: http status: 401, code:-1 - https://api.spotify.com/v1/users/ibljx0xr7u5m4u06y52wjgrip/starred:
+ Unauthorized., reason: None
+Liuk Del Valun - 08/04/2023 18:19:43 | Command raised an exception: TypeError: list indices must be integers or slices, not str
+Liuk Del Valun - 08/04/2023 18:25:40 | Command raised an exception: KeyError: 0
+Liuk Del Valun - 08/04/2023 18:32:03 | Command raised an exception: TypeError: emoji argument must be str, Emoji, or Reaction not int.
+Liuk Del Valun - 08/04/2023 18:50:54 | Command raised an exception: TypeError: list indices must be integers or slices, not tuple
+Liuk Del Valun - 08/04/2023 18:52:46 | Command raised an exception: AttributeError: 'tuple' object has no attribute 'emoji'
+Liuk Del Valun - 08/04/2023 18:55:53 | Command raised an exception: AttributeError: 'MyFunctions' object has no attribute 'link_spotify'
+Liuk Del Valun - 08/04/2023 18:57:28 | Command raised an exception: KeyError: 'name'
+Liuk Del Valun - 08/04/2023 18:59:54 | Command raised an exception: AttributeError: 'Member' object has no attribute 'replace'

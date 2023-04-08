@@ -1,5 +1,8 @@
 import discord
 import yt_dlp as youtube_dl
+from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy
+import spotipy.util as util
 import exceptions
 import asyncio
 import configparser
@@ -11,11 +14,15 @@ import os
 
 
 class MyFunctions:
-    def __init__(self, bot, prefix, volume, lyrics, bot_name):
+    def __init__(self, bot, prefix, volume, lyrics, bot_name, spotify_id, spotify_secret):
         self.bot = bot # instance of my_commands.Bot class
         self.prefix = prefix # bot prefix [default=!]
         self.lyrics_token = lyrics # token to get lyrics from genius.com
         self.volume_value = volume # music volume (between 0.0 and 2.0)
+        self.spotify_id = spotify_id
+        self.spotify_secret = spotify_secret
+        self.spotify_redirect_uri = "https://github.com/theLiuk23"
+        self.reaction_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.bool_loop = False # bool if bot has to play the same song 
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
@@ -196,7 +203,8 @@ class MyFunctions:
         name = "_".join(name)
         name = name.strip()
         name = name.replace(' ', '_')
-        if name.lower() not in self.playlists:
+        if name not in self.playlists:
+            print("\n".join(self.playlists))
             raise exceptions.BadArgument("playlist name", "The playlist does not exist.")
         
         with open(f'playlists/{name}.ini', 'r') as file:
@@ -375,3 +383,40 @@ class MyFunctions:
             config.write(file)
         self.bot.command_prefix = new
         await ctx.send(f"Prefix successfully changed to '{new}'")
+
+
+    async def add_playlist_from_spotify(self, ctx, user=None):
+        if not user:
+            ctx.author
+            # raise exceptions.MissingRequiredArgument("user", ctx.author)
+        # spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(self.spotify_id, self.spotify_secret))
+        token = util.prompt_for_user_token(user, scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
+        if token:
+            embed = discord.embeds.Embed()
+            spotify = spotipy.Spotify(auth=token)
+            playlists = spotify.user_playlists(user, limit=10)
+            for index, playlist in enumerate(playlists['items']):
+                if playlist['name']:
+                    embed.add_field(name=str(index + 1), value=playlist['name'])
+            message = await ctx.send(embed=embed)
+            for i in range(len(message.embeds[0].fields)):
+                await message.add_reaction(self.reaction_list[i])
+
+            def check(reaction, user):
+                return str(reaction.emoji) in self.reaction_list
+            try:
+                result = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+            except asyncio.TimeoutError:
+                result = False
+
+            if result[0]:
+                chosen_playlist = playlists['items'][self.reaction_list.index(str(result[0].emoji))]
+                playlist_name = chosen_playlist['name'].replace(" ", "_")
+                with open(f"playlists/{playlist_name}.ini", "w") as file:
+                    for song in spotify.playlist_tracks(chosen_playlist['id'])['items']:
+                        file.write(f"{song['track']['name']}\n")
+
+                await self.load_playlists()
+                
+        else:
+            print("No token")

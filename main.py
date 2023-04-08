@@ -11,7 +11,6 @@ If you have any question, please write me at ldvcoding@gmail.com
 
 
 from discord.ext import commands
-import pip
 import configparser
 import exceptions
 import subprocess
@@ -44,7 +43,7 @@ def install_ffmpeg():
 
 
 async def initiate_bot():
-    await bot.add_cog(my_commands.MusicBot(bot, prefix, float(volume), lyrics, bot_name))
+    await bot.add_cog(my_commands.MusicBot(bot, prefix, float(volume), lyrics, bot_name, spotify_id, spotify_secret))
     await bot.start(token)
 
 
@@ -55,6 +54,8 @@ if __name__ == "__main__":
     volume = read_setting("volume")
     lyrics = read_setting("lyrics")
     bot_name = read_setting("name")
+    spotify_id = read_setting("spotify_id")
+    spotify_secret = read_setting("spotify_secret")
     activity = discord.Activity(type=discord.ActivityType.listening, name=f'music. {prefix}help')
     bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), activity=activity, help_command=my_commands.CustomHelpCommand())
     
