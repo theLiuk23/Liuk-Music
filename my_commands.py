@@ -30,8 +30,6 @@ import datetime
 import discord
 
 
-
-
 class MusicBot(commands.Cog):
     def __init__(self, bot, bot_prefix, volume, lyrics, bot_name, spotify_id, spotify_secret):
         self.bot = bot # instance of commands.Bot class
@@ -182,12 +180,12 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="skip", help="It stops the current playing song to play the next song.",
                     aliases=["next", "incoming"])
-    async def skip(self, ctx):
+    async def skip(self, ctx, index=None):
         '''
         It stops the current playing song (so the next one in the queue will start).
         only the owner can directly skip the song. Other users will simply add a vote.
         '''
-        await self.functions.skip(ctx)
+        await self.functions.skip(ctx, index)
 
 
     @commands.cooldown(1, 10, commands.BucketType.user)  # 0 == default = global
@@ -311,11 +309,11 @@ class MusicBot(commands.Cog):
 
     @commands.command(name="spotify", help="It links your spotify account with discord in order to import your spotify's playlists.",
                       aliases=["spot", "link"])
-    async def spotify(self, ctx, user):
+    async def spotify(self, ctx, **user):
         '''
         It links your spotify account with discord in order to import your spotify's playlists.
         '''
-        await self.functions.add_playlist_from_spotify(ctx, user)
+        await self.functions.add_playlist_from_spotify(ctx, **user)
 
 
 

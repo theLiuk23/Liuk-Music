@@ -123,3 +123,33 @@ Liuk Del Valun - 08/04/2023 18:52:46 | Command raised an exception: AttributeErr
 Liuk Del Valun - 08/04/2023 18:55:53 | Command raised an exception: AttributeError: 'MyFunctions' object has no attribute 'link_spotify'
 Liuk Del Valun - 08/04/2023 18:57:28 | Command raised an exception: KeyError: 'name'
 Liuk Del Valun - 08/04/2023 18:59:54 | Command raised an exception: AttributeError: 'Member' object has no attribute 'replace'
+Liuk Del Valun - 09/04/2023 19:15:54 | Command raised an exception: Timeout: Request timed out:
+HTTPSConnectionPool(host='genius.com', port=443): Read timed out. (read timeout=5)
+Liuk Del Valun - 09/04/2023 19:22:26 | Command raised an exception: ClientException: Already playing audio.
+Liuk Del Valun - 09/04/2023 19:22:28 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In content: Must be 2000 or fewer in length.
+Liuk Del Valun - 09/04/2023 19:22:32 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In content: Must be 2000 or fewer in length.
+Liuk Del Valun - 09/04/2023 19:23:11 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In content: Must be 2000 or fewer in length.
+Liuk Del Valun - 09/04/2023 19:38:33 | Command raised an exception: TypeError: list indices must be integers or slices, not str
+Liuk Del Valun - 09/04/2023 19:38:56 | Command raised an exception: IndexError: list index out of range
+Liuk Del Valun - 09/04/2023 19:52:11 | Command raised an exception: TypeError: slice indices must be integers or None or have an __index__ method
+Liuk Del Valun - 09/04/2023 20:31:04 | Command raised an exception: AttributeError: 'NoneType' object has no attribute 'title'
+Liuk Del Valun - 09/04/2023 20:31:21 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users//playlists?limit=10&offset=0:
+ Invalid username, reason: None
+Liuk Del Valun - 09/04/2023 20:38:21 | Command raised an exception: TypeError: 'Spotify' object is not iterable
+Liuk Del Valun - 09/04/2023 20:39:20 | Command raised an exception: AttributeError: 'Spotify' object has no attribute '__dict__'
+Liuk Del Valun - 09/04/2023 20:44:43 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users//playlists?limit=10&offset=0:
+ Invalid username, reason: None
+Liuk Del Valun - 09/04/2023 20:49:20 | Command raised an exception: SpotifyOauthError: No client_id. Pass it or set a SPOTIPY_CLIENT_ID environment variable.
+Liuk Del Valun - 09/04/2023 20:49:50 | Command raised an exception: SpotifyOauthError: No redirect_uri. Pass it or set a SPOTIPY_REDIRECT_URI environment variable.
+Liuk Del Valun - 09/04/2023 20:50:09 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users//playlists?limit=10&offset=0:
+ Invalid username, reason: None
+Liuk Del Valun - 09/04/2023 20:51:23 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users/%7B'display_name':%20'Luca%20Dalla%20Villa',%20'external_urls':%20%7B'spotify':%20'https://open.spotify.com/user/ibljx0xr7u5m4u06y52wjgrip'%7D,%20'followers':%20%7B'href':%20None,%20'total':%203%7D,%20'href':%20'https://api.spotify.com/v1/users/ibljx0xr7u5m4u06y52wjgrip',%20'id':%20'ibljx0xr7u5m4u06y52wjgrip',%20'images':%20%5B%5D,%20'type':%20'user',%20'uri':%20'spotify:user:ibljx0xr7u5m4u06y52wjgrip'%7D/playlists?limit=10&offset=0:
+ Service not found, reason: None
+Liuk Del Valun - 09/04/2023 20:52:35 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users/%7B'display_name':%20'Luca%20Dalla%20Villa',%20'external_urls':%20%7B'spotify':%20'https://open.spotify.com/user/ibljx0xr7u5m4u06y52wjgrip'%7D,%20'followers':%20%7B'href':%20None,%20'total':%203%7D,%20'href':%20'https://api.spotify.com/v1/users/ibljx0xr7u5m4u06y52wjgrip',%20'id':%20'ibljx0xr7u5m4u06y52wjgrip',%20'images':%20%5B%5D,%20'type':%20'user',%20'uri':%20'spotify:user:ibljx0xr7u5m4u06y52wjgrip'%7D/playlists?limit=10&offset=0:
+ Service not found, reason: None
+Liuk Del Valun - 09/04/2023 20:54:16 | Command raised an exception: SpotifyException: http status: 404, code:-1 - https://api.spotify.com/v1/users/%7B'display_name':%20'Luca%20Dalla%20Villa',%20'external_urls':%20%7B'spotify':%20'https://open.spotify.com/user/ibljx0xr7u5m4u06y52wjgrip'%7D,%20'followers':%20%7B'href':%20None,%20'total':%203%7D,%20'href':%20'https://api.spotify.com/v1/users/ibljx0xr7u5m4u06y52wjgrip',%20'id':%20'ibljx0xr7u5m4u06y52wjgrip',%20'images':%20%5B%5D,%20'type':%20'user',%20'uri':%20'spotify:user:ibljx0xr7u5m4u06y52wjgrip'%7D/playlists?limit=10&offset=0:
+ Service not found, reason: None
+Liuk Del Valun - 09/04/2023 20:58:17 | Command raised an exception: TypeError: 'bool' object is not subscriptable

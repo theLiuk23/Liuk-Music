@@ -1,6 +1,6 @@
 import discord
 import yt_dlp as youtube_dl
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 import spotipy.util as util
 import exceptions
@@ -194,19 +194,23 @@ class MyFunctions:
                 await ctx.send("The video is either a playlist or it is too long. (more than 2 hours long)")
 
 
-    async def album(self, ctx, *name):
-        if len(name) == 0:
+    async def album(self, ctx, *value):
+        if len(value) == 0:
             await ctx.send("Here's a list of the saved playlists:\n" + "\n".join("[{}] {}".format(i, pl) for i, pl in enumerate(self.playlists, start=1)))
             return
         if ctx.author.voice is None:
             raise exceptions.NotConnected(ctx.author)
-        name = "_".join(name)
-        name = name.strip()
-        name = name.replace(' ', '_')
+        if str.isdigit(value[0]):
+            files = [item for item in os.listdir("./playlists") if item.endswith(".ini")]
+            name = files[int(value[0]) - 1]
+            name = name.removesuffix(".ini")
+        else:
+            name = "_".join(value)
+            name = name.strip()
+            name = name.replace(' ', '_')
         if name not in self.playlists:
             print("\n".join(self.playlists))
             raise exceptions.BadArgument("playlist name", "The playlist does not exist.")
-        
         with open(f'playlists/{name}.ini', 'r') as file:
             for line in file.readlines():
                 self.queue.append(line.strip("\n"))
@@ -226,11 +230,17 @@ class MyFunctions:
         await self.disconnect()
 
 
-    async def skip(self, ctx):
+    async def skip(self, ctx, index=None):
         if ctx.author == ctx.guild.owner:
             if self.voice is None:
                 raise exceptions.NotConnected("Bot")
-            self.voice.stop()
+            if index:
+                if not str.isdigit(index):
+                    raise exceptions.BadArgumentType(index, type(index), int, ctx.author)
+                del self.queue[:int(index) - 1] # removes songs up to the chosen index
+                self.voice.stop()
+            else:
+                self.voice.stop()
         else:
             await self.vote_skip(ctx)
 
@@ -246,7 +256,12 @@ class MyFunctions:
     async def next(self, ctx):
         if len(self.queue) <= 0:
             raise exceptions.QueueIsEmpty(self.queue, ctx.author)
-        await ctx.send(f"**Here's a list of the next songs**: \n[1] {self.played_songs[-1]} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue)))
+        embed = discord.embeds.Embed(title="Queue")
+        embed.add_field(name="now playing", value=self.played_songs[-1], inline=True)
+        for index, song in enumerate(self.queue):
+            embed.add_field(name="song " + str(index + 1), value=song, inline=True)
+        await ctx.send(embed = embed)
+        # f"**Here's a list of the next songs**: \n[1] {} (now playing)\n" + "\n".join("[{}] {}".format(str(index + 2), song) for index, song in enumerate(self.queue))
 
 
     async def offline(self, ctx):
@@ -310,7 +325,7 @@ class MyFunctions:
         index = int(index) - 1
         if len(self.queue) <= 0:
             raise exceptions.QueueIsEmpty(self.queue, ctx.author)
-        if len(self.queue) < index or index <= 0:
+        if len(self.queue) < index or index < 0:
             raise exceptions.BadArgument(str(index + 1), f"Greater than {len(self.queue)} or lower than 1 (out of the queue bounds)", ctx.author)
         await ctx.send(f"'{self.queue[index - 1]}' removed from queue.")
         self.queue.pop(index - 1)
@@ -384,39 +399,39 @@ class MyFunctions:
         self.bot.command_prefix = new
         await ctx.send(f"Prefix successfully changed to '{new}'")
 
+        "'prompt_for_user_token' is deprecated."
+        "Use the following instead: "
+        "    auth_manager=SpotifyOAuth(scope=scope)"
+        "    spotipy.Spotify(auth_manager=auth_manager)",
 
-    async def add_playlist_from_spotify(self, ctx, user=None):
-        if not user:
-            ctx.author
-            # raise exceptions.MissingRequiredArgument("user", ctx.author)
-        # spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(self.spotify_id, self.spotify_secret))
-        token = util.prompt_for_user_token(user, scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
-        if token:
-            embed = discord.embeds.Embed()
-            spotify = spotipy.Spotify(auth=token)
-            playlists = spotify.user_playlists(user, limit=10)
-            for index, playlist in enumerate(playlists['items']):
-                if playlist['name']:
-                    embed.add_field(name=str(index + 1), value=playlist['name'])
-            message = await ctx.send(embed=embed)
-            for i in range(len(message.embeds[0].fields)):
-                await message.add_reaction(self.reaction_list[i])
-
-            def check(reaction, user):
-                return str(reaction.emoji) in self.reaction_list
-            try:
-                result = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
-            except asyncio.TimeoutError:
-                result = False
-
-            if result[0]:
-                chosen_playlist = playlists['items'][self.reaction_list.index(str(result[0].emoji))]
-                playlist_name = chosen_playlist['name'].replace(" ", "_")
-                with open(f"playlists/{playlist_name}.ini", "w") as file:
-                    for song in spotify.playlist_tracks(chosen_playlist['id'])['items']:
-                        file.write(f"{song['track']['name']}\n")
-
-                await self.load_playlists()
+    async def add_playlist_from_spotify(self, ctx, **user):
+        user = " ".join(user)
+        # token = util.prompt_for_user_token(user, scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
+        auth_manager = SpotifyOAuth(scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
+        embed = discord.embeds.Embed()
+        spotify = spotipy.Spotify(auth_manager=auth_manager)
+        playlists = spotify.user_playlists(spotify.current_user()['id'], limit=10)
+        for index, playlist in enumerate(playlists['items']):
+            if playlist['name']:
+                embed.add_field(name="song " + str(index + 1), value=playlist['name'])
                 
-        else:
-            print("No token")
+        message = await ctx.send(embed=embed)
+        for i in range(len(message.embeds[0].fields)):
+            await message.add_reaction(self.reaction_list[i])
+
+        def check(reaction, user):
+            return str(reaction.emoji) in self.reaction_list
+        try:
+            result = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            return
+
+        if result[0]:
+            chosen_playlist = playlists['items'][self.reaction_list.index(str(result[0].emoji))]
+            playlist_name = chosen_playlist['name'].replace(" ", "_")
+            with open(f"playlists/{playlist_name}.ini", "w") as file:
+                for song in spotify.playlist_tracks(chosen_playlist['id'])['items']:
+                    file.write(f"{song['track']['name']}\n")
+
+            await ctx.send(f"Playlist '{playlist_name}' successfully saved.")
+            await self.load_playlists()
