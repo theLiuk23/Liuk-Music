@@ -410,7 +410,7 @@ class MyFunctions:
         auth_manager = SpotifyOAuth(scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
         embed = discord.embeds.Embed()
         spotify = spotipy.Spotify(auth_manager=auth_manager)
-        playlists = spotify.user_playlists(spotify.current_user()['id'], limit=10)
+        playlists = spotify.user_playlists(spotify.current_user()['id'], limit=20)
         for index, playlist in enumerate(playlists['items']):
             if playlist['name']:
                 embed.add_field(name="song " + str(index + 1), value=playlist['name'])
