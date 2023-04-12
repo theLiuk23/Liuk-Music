@@ -159,3 +159,9 @@ Liuk Del Valun - 09/04/2023 21:07:25 | Command raised an exception: HTTPExceptio
 In emoji_id: Value "" is not snowflake.
 Liuk Del Valun - 09/04/2023 21:08:14 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
 In emoji_id: Value "" is not snowflake.
+Liuk Del Valun - 12/04/2023 15:13:39 | Command raised an exception: IndexError: list index out of range
+Liuk Del Valun - 12/04/2023 15:23:22 | Command raised an exception: TypeError: 'str' object is not callable
+Liuk Del Valun - 12/04/2023 15:24:09 | Command raised an exception: HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In emoji_id: Value "" is not snowflake.
+Liuk Del Valun - 12/04/2023 15:32:30 | Command raised an exception: IndexError: list index out of range
+Liuk Del Valun - 12/04/2023 15:56:04 | Command raised an exception: TypeError: 'async for' requires an object with __aiter__ method, got range

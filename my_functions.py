@@ -1,3 +1,4 @@
+import string
 import discord
 import yt_dlp as youtube_dl
 from spotipy.oauth2 import SpotifyOAuth
@@ -22,7 +23,7 @@ class MyFunctions:
         self.spotify_id = spotify_id
         self.spotify_secret = spotify_secret
         self.spotify_redirect_uri = "https://github.com/theLiuk23"
-        self.reaction_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        self.reaction_list = ["🇦", "🇧", "🇨", "🇩", "🇪", "🇫", "🇬", "🇭", "🇮", "🇱", "🇲", "🇳", "🇴", "🇵", "🇶", "🇷", "🇸", "🇹", "🇺", "🇻", "🇼", "🇽", "🇾", "🇿"]
         self.check1, self.check2 = 0, 0 # number of times self.check_members() and self.check_music() are triggered
         self.bool_loop = False # bool if bot has to play the same song 
         self.voice = None # instance of the VoiceClient class containing the info about the channel where's the bot has connected
@@ -404,20 +405,19 @@ class MyFunctions:
         "    auth_manager=SpotifyOAuth(scope=scope)"
         "    spotipy.Spotify(auth_manager=auth_manager)",
 
+
     async def add_playlist_from_spotify(self, ctx, **user):
         user = " ".join(user)
-        # token = util.prompt_for_user_token(user, scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
         auth_manager = SpotifyOAuth(scope="playlist-read-private", client_id=self.spotify_id, client_secret=self.spotify_secret, redirect_uri=self.spotify_redirect_uri)
         embed = discord.embeds.Embed()
         spotify = spotipy.Spotify(auth_manager=auth_manager)
         playlists = spotify.user_playlists(spotify.current_user()['id'], limit=20)
         for index, playlist in enumerate(playlists['items']):
             if playlist['name']:
-                embed.add_field(name="song " + str(index + 1), value=playlist['name'])
+                embed.add_field(name="Playlist " + string.ascii_uppercase[index], value=playlist['name'])
                 
         message = await ctx.send(embed=embed)
-        for i in range(len(message.embeds[0].fields)):
-            await message.add_reaction(self.reaction_list[i])
+        await asyncio.gather(*[message.add_reaction(self.reaction_list[i]) for i in range(len(message.embeds[0].fields))])
 
         def check(reaction, user):
             return str(reaction.emoji) in self.reaction_list
